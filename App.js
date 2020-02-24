@@ -46,6 +46,7 @@ export default function App(props) {
   if (!isLoadingComplete && !props.skipLoadingScreen) {
     return null;
   } else {
+    // TODO. Verificar si tiene session Iniciada o no. Redireccionar a Login en caso de No
     return (
       <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
