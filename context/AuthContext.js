@@ -20,6 +20,7 @@ import React from 'react';
 //   El argumento defaultValue es usado únicamente cuando un componente no tiene un Provider superior a él en el árbol. 
 // Esto puede ser útil para probar componentes de forma aislada sin contenerlos. 
 // Nota: pasar undefined como valor al Provider no hace que los componentes que lo consumen utilicen defaultValue.
+// https://es.reactjs.org/docs/context.html#reactcreatecontext
 
 
 

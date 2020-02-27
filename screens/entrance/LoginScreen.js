@@ -7,36 +7,13 @@ import { Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
 import AuthContext from '../../context/AuthContext'
 
 const LoginScreen = props => {
-    // const AuthContext = React.createContext();
-
-    // Traemos las variables de Contexto desde el componente Padre App.js
-    // const { signIn } = React.useContext(AuthContext)
+    // Traemos las variables de Contexto. La variables fueron definidas en el Componente que tiene
+    // Context.Provider 
+    const { login } = React.useContext(AuthContext)
 
     const [username, setUsername] = useState({ value: '' })
     const [password, setPassword] = useState({ value: '' })
 
-    // const handleParsingLoginForm = () => {
-    //     var data = {
-    //         username: username.username,
-    //         password: password.password
-    //     }
-    //     axios.post('https://scpp.herokuapp.com/api/v1/api-endpoints/entrance/login', data
-    //     ).then(response => {
-    //         console.log(response)
-    //         if(response.status != 200){
-    //             console.log("El usuario no esta autorizado")
-    //         } else {
-    //             console.log("Usuario Autorizado")
-    //             // Guardamos usuario y la navegacion se actualiza automaticamente
-    //             AsyncStorage.setItem('session', JSON.stringify(response.data.sessionHash))
-    //             AsyncStorage.setItem('user', JSON.stringify(response.data.user))
-    //             props.login
-    //             // props.navigation.navigate('Home')
-    //         }
-    //     }).catch(err => {
-    //         console.error(err)
-    //     })
-    // }
 
     // .______       _______ .__   __.  _______   _______ .______      
     // |   _  \     |   ____||  \ |  | |       \ |   ____||   _  \     
@@ -60,11 +37,7 @@ const LoginScreen = props => {
 
                     </Card.Content>
                     <Card.Actions>
-                        <AuthContext.Consumer>
-                            {({ login }) => (
-                                <Button mode="contained" style={styles.loginButton} onPress={() => login({ username, password })}>Ingresar</Button>
-                            )}
-                        </AuthContext.Consumer>
+                        <Button mode="contained" style={styles.loginButton} onPress={() => login({ username, password })}>Ingresar</Button>
                     </Card.Actions>
                 </Card>
             </View>
