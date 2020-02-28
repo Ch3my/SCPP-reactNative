@@ -27,14 +27,6 @@ export default function BottomTabNavigator({ navigation, route }) {
         }}
       />
       <BottomTab.Screen
-        name="Reports"
-        component={ReportsScreen}
-        options={{
-          title: 'Informes',
-          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
-        }}
-      />
-      <BottomTab.Screen
         name="AddRecordScreen"
         component={AddRecordScreen}
         options={{
@@ -48,6 +40,14 @@ export default function BottomTabNavigator({ navigation, route }) {
         options={{
           title: 'Docs',
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-document" />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Reports"
+        component={ReportsScreen}
+        options={{
+          title: 'Informes',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
         }}
       />
     </BottomTab.Navigator>

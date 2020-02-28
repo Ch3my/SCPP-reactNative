@@ -51,7 +51,6 @@ export default function AddRecordScreen() {
             monto: monto,
             fecha: moment(date).format('YYYY-MM-DD')
         }
-        console.log(argins)
 
         // Verificar que todos los campos estan Llenos
         if (argins.fk_categoria == '' || argins.fk_tipoDoc == '' || argins.proposito == '' || argins.monto == '' || argins.fecha == '') {
@@ -68,7 +67,7 @@ export default function AddRecordScreen() {
                 } else {
                     setFeedback(true)
                     setFeedbackDescription('Se ha grabado con Exito :D')
-                    setTimeout(()=>{setFeedback(false)}, 3000)
+                    setTimeout(() => { setFeedback(false) }, 3000)
                 }
             })
             .catch(function (err) {
@@ -110,12 +109,13 @@ export default function AddRecordScreen() {
         setShow(true);
     };
 
-    // .______    __    ______  __  ___  _______ .______      
-    // |   _  \  |  |  /      ||  |/  / |   ____||   _  \     
-    // |  |_)  | |  | |  ,----'|  '  /  |  |__   |  |_)  |    
-    // |   ___/  |  | |  |     |    <   |   __|  |      /     
-    // |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.
-    // | _|      |__|  \______||__|\__\ |_______|| _| `._____|
+
+    // .______    __    ______  __  ___  _______ .______           ______      ___      .___________. _______   _______   ______   .______       __       ___      
+    // |   _  \  |  |  /      ||  |/  / |   ____||   _  \         /      |    /   \     |           ||   ____| /  _____| /  __  \  |   _  \     |  |     /   \     
+    // |  |_)  | |  | |  ,----'|  '  /  |  |__   |  |_)  |       |  ,----'   /  ^  \    `---|  |----`|  |__   |  |  __  |  |  |  | |  |_)  |    |  |    /  ^  \    
+    // |   ___/  |  | |  |     |    <   |   __|  |      /        |  |       /  /_\  \       |  |     |   __|  |  | |_ | |  |  |  | |      /     |  |   /  /_\  \   
+    // |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.   |  `----. /  _____  \      |  |     |  |____ |  |__| | |  `--'  | |  |\  \----.|  |  /  _____  \  
+    // | _|      |__|  \______||__|\__\ |_______|| _| `._____|    \______|/__/     \__\     |__|     |_______| \______|  \______/  | _| `._____||__| /__/     \__\ 
 
     // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
 
@@ -153,6 +153,16 @@ export default function AddRecordScreen() {
         getTipoDocAsync();
     }, []);
 
+    // Maneja el Evento cuando Cambian el Select si no es categoria Gasto deja como Null la categoria
+    const onChangeTipoDoc = (itemValue) => {
+        setTipoDoc(itemValue)
+        if (itemValue != 1) {
+            setCategory(null)
+        } else {
+            // Reset la Categoria a valor por Defecto
+            setCategory(2)
+        }
+    }
 
 
     return (
@@ -174,18 +184,6 @@ export default function AddRecordScreen() {
             <View>
                 <ScrollView style={styles.contentContainer}>
 
-                    <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-                        <Text style={styles.label}>Tipo Doc</Text>
-                        <View style={{ width: 300, height: 40, marginTop: 15 }}>
-                            <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
-                                onValueChange={(itemValue, itemIndex) => setTipoDoc(itemValue)}>
-                                {listOfTipoDoc.map((item, key) => (
-                                    <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-                                )}
-                            </Picker>
-                        </View>
-                    </View>
-
                     <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
                         onChangeText={text => setMonto(text)} keyboardType={'numeric'} />
                     <TextInput mode="outlined" dense='true' label='Propósito' value={proposito} style={styles.customInput}
@@ -202,24 +200,38 @@ export default function AddRecordScreen() {
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> > </Button>
                     </View>
 
-                    <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5 }}>
-                        <Text style={styles.label}>Categoria</Text>
+                    <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
+                        <Text style={{marginTop: 30}}>Tipo Doc </Text>
                         <View style={{ width: 300, height: 40, marginTop: 15 }}>
-                            <Picker selectedValue={category} style={styles.picker, styles.customInput}
-                                onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}>
-                                {listOfCategories.map((item, key) => (
+                            <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
+                                onValueChange={(itemValue, itemIndex) => onChangeTipoDoc(itemValue)}>
+                                {listOfTipoDoc.map((item, key) => (
                                     <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
                                 )}
                             </Picker>
                         </View>
                     </View>
 
+                    {category && (
+                        <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5 }}>
+                            <Text style={styles.label}>Categoria</Text>
+                            <View style={{ width: 300, height: 40 }}>
+                                <Picker selectedValue={category} style={styles.picker, styles.customInput}
+                                    onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}>
+                                    {listOfCategories.map((item, key) => (
+                                        <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
+                                    )}
+                                </Picker>
+                            </View>
+                        </View>
+                    )}
+
                     <Button mode="contained" onPress={saveNewRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
                     <Button mode="outlined" style={styles.customInput, styles.saveButton} onPress={clearForm}>Limpiar</Button>
 
                 </ScrollView>
             </View>
-        </View>
+        </View >
 
     );
 }
@@ -253,7 +265,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     label: {
-        marginTop: 30
+        marginTop: 15
     },
     saveButton: {
         marginTop: 30
