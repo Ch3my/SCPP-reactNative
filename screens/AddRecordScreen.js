@@ -19,7 +19,7 @@ export default function AddRecordScreen() {
     // |   __|  |  |  |  | |      /     |  |\/|  |    |  |  |  |  /  /_\  \       |  |       /  /_\  \   
     // |  |     |  `--'  | |  |\  \----.|  |  |  |    |  '--'  | /  _____  \      |  |      /  _____  \  
     // |__|      \______/  | _| `._____||__|  |__|    |_______/ /__/     \__\     |__|     /__/     \__\                                                                                                     
-    
+
     const [proposito, setProposito] = React.useState('')
     const [monto, setMonto] = React.useState('')
 
@@ -54,7 +54,7 @@ export default function AddRecordScreen() {
         console.log(argins)
 
         // Verificar que todos los campos estan Llenos
-        if(argins.fk_categoria == '' || argins.fk_tipoDoc == '' || argins.proposito == '' ||argins.monto == '' ||argins.fecha == '') {
+        if (argins.fk_categoria == '' || argins.fk_tipoDoc == '' || argins.proposito == '' || argins.monto == '' || argins.fecha == '') {
             setFeedback(true)
             setFeedbackDescription('Debes llenar todos los campos xD')
         }
@@ -68,6 +68,7 @@ export default function AddRecordScreen() {
                 } else {
                     setFeedback(true)
                     setFeedbackDescription('Se ha grabado con Exito :D')
+                    setTimeout(()=>{setFeedback(false)}, 3000)
                 }
             })
             .catch(function (err) {
@@ -155,7 +156,7 @@ export default function AddRecordScreen() {
 
 
     return (
-        <View>
+        <View style={styles.container}>
             <Banner visible={feedback}
                 actions={[{
                     label: 'Okay',
@@ -170,7 +171,7 @@ export default function AddRecordScreen() {
                 ]}>
                 <Text>{feedbackDescription}</Text>
             </Banner>
-            <View style={styles.container}>
+            <View>
                 <ScrollView style={styles.contentContainer}>
 
                     <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     contentContainer: {
-        padding: 20,
+        padding: 10,
     },
     customInput: {
         marginBottom: 10

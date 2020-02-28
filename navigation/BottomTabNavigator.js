@@ -4,7 +4,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import AddRecordScreen from '../screens/AddRecordScreen';
-import DocumentosScreen from '../screens/DocumentosScreen';
+import DocsScreen from '../screens/DocsScreen';
 
 const BottomTab = createBottomTabNavigator();
 const INITIAL_ROUTE_NAME = 'Home';
@@ -44,7 +44,7 @@ export default function BottomTabNavigator({ navigation, route }) {
       />
       <BottomTab.Screen
         name="Documentos"
-        component={DocumentosScreen}
+        component={DocsScreen}
         options={{
           title: 'Docs',
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-document" />,
