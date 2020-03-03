@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Picker, ListView, Animated } from 'react-native';
+import { StyleSheet, Text, View, Picker, ListView, Animated, AsyncStorage } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
@@ -9,6 +9,8 @@ import numeral from 'numeral'
 
 import moment from 'moment'
 import 'moment/locale/es'
+import _ from 'lodash'
+import AuthContext from '../context/AuthContext'
 
 import { DataTable, IconButton, Button, ProgressBar } from 'react-native-paper';
 
@@ -17,6 +19,9 @@ import { DataTable, IconButton, Button, ProgressBar } from 'react-native-paper';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 export default function DocsScreen({ navigation }) {
+
+  // Simplemente ejecuta funcion Logout del Context (Asi modifica el estado de la App)
+  const { logout } = React.useContext(AuthContext)
 
   //     _______..___________.     ___      .___________. _______ 
   //     /       ||           |    /   \     |           ||   ____|
@@ -30,9 +35,11 @@ export default function DocsScreen({ navigation }) {
   const [listOfData, setListOfData] = React.useState([]);
   const [tipoDoc, setTipoDoc] = React.useState(1);
   const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
-  const [selectedDoc, setSelectedDoc] = React.useState(-1);
+  // const [selectedDoc, setSelectedDoc] = React.useState(-1);
   const [rowRefs, setRowRefs] = React.useState([]);
-
+  // Ref es como State solo que no se recarga cada vez que el componente lo hace
+  // Lo usamos para diferenciar entre primera renderizacion y eventos updated
+  const didMountRef = React.useRef(false)
 
   // Set moment locale
   moment.locale('es')
@@ -49,8 +56,20 @@ export default function DocsScreen({ navigation }) {
   React.useEffect(() => {
     // Fetch dat from API and build Picker
     const getTipoDocAsync = async () => {
-      let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc').catch((err) => { console.log(err) })
-      setListOfTipoDoc(tipoDoc.data)
+      // Obtiene la Session 
+      var sessionHash = await AsyncStorage.getItem('session');
+      let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc', {
+        params: {
+          sessionHash
+        }
+      }).catch((err) => { console.log(err) })
+      // Probablemente este Error es que el Token no es valido
+      // Cerramos la Sesion
+      if (tipoDoc.data.hasErrors) {
+        logout(sessionHash)
+      } else {
+        setListOfTipoDoc(tipoDoc.data)
+      }
     };
     getTipoDocAsync();
   }, []);
@@ -76,17 +95,25 @@ export default function DocsScreen({ navigation }) {
       fechaInicio = moment().format('YYYY') + '-01-01'
       fechaTermino = moment().format('YYYY') + '-12-01'
     }
+    // Obtiene la Session 
+    var sessionHash = await AsyncStorage.getItem('session');
     let docs = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-docs', {
       params: {
         fk_tipoDoc: tipoDoc,
         fechaInicio,
-        fechaTermino
+        fechaTermino,
+        sessionHash
       }
     }).catch((err) => { console.log(err) })
-    setIsLoading(false)
-    setListOfData(docs.data)
+    // Probablemente este Error es que el Token no es valido
+    // Cerramos la Sesion
+    if (docs.data.hasErrors) {
+      logout(sessionHash)
+    } else {
+      setIsLoading(false)
+      setListOfData(docs.data)
+    }
   };
-
 
   //  _______  _______ .___________.  ______  __    __          ___      .______    __      __       __       _______..___________. _______ .__   __.  _______ .______       _______      _______.
   //  |   ____||   ____||           | /      ||  |  |  |        /   \     |   _  \  |  |    |  |     |  |     /       ||           ||   ____||  \ |  | |   ____||   _  \     |   ____|    /       |
@@ -101,8 +128,10 @@ export default function DocsScreen({ navigation }) {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       getDataAsync();
+      // Declaramos como true para que los siguientes eventos se consideren updated y no mounted
+      // es un flag de control
+      didMountRef.current = true
     });
-
     return unsubscribe;
   }, [navigation]);
 
@@ -112,10 +141,10 @@ export default function DocsScreen({ navigation }) {
   // si no se especifica o es [] (vacio) el hook solo se ejecuta on loaded sin mirar variables
   React.useEffect(() => {
     // Fetch dat from API to build Table
-    getDataAsync();
+    if (didMountRef.current == true) {
+      getDataAsync();
+    }
   }, [tipoDoc]);
-
-
 
   // .______     ______   .___________.  ______   .__   __.  _______      _______.
   // |   _  \   /  __  \  |           | /  __  \  |  \ |  | |   ____|    /       |
@@ -125,24 +154,34 @@ export default function DocsScreen({ navigation }) {
   // |______/   \______/      |__|      \______/  |__| \__| |_______||_______/    
 
   // Funcion que renderiza Los botones al Swiped
-  const renderRightAction = (text, color, x, progress, icon) => {
+  const renderRightAction = (text, color, x, progress, icon, id) => {
     // Calcula transformacion de los botones en funcion del movimiento
     const trans = progress.interpolate({
       inputRange: [0, 1],
       outputRange: [x, 0],
     });
-    const pressHandler = () => {
+    const pressHandler = async id => {
+      // alert(id)
       if (text == 'modify') {
         // Abrir Activity de Modificar
       } else if (text == 'delete') {
-        // Enviar al Servidor la eliminacion de este Registro y recargar la tabla
+        try {
+          // Obtiene la Session 
+          var sessionHash = await AsyncStorage.getItem('session');
+          // Enviar al Servidor la eliminacion de este Registro y recargar la tabla
+          await axios.delete('https://scpp.herokuapp.com/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
+          getDataAsync();
+        } catch (e) {
+          console.log("Error al eliminar Documento")
+          console.log(e)
+        }
       }
     };
     return (
       <Animated.View style={{ flex: 1, transform: [{ translateX: trans }] }}>
         <RectButton
           style={[styles.rightAction, { backgroundColor: color }]}
-          onPress={pressHandler}>
+          onPress={() => pressHandler(id)}>
           {/* <Text style={styles.actionText}>{text}</Text> */}
           <Ionicons name={icon} size={20} style={{ marginBottom: -3 }} color={"white"} />
         </RectButton>
@@ -150,10 +189,11 @@ export default function DocsScreen({ navigation }) {
     );
   };
 
-  const renderRightActions = progress => (
+  const renderRightActions = (progress, id) => (
+    // La variable progress es algo que Swipeable Component entrega
     <View style={{ width: 100, flexDirection: 'row' }}>
-      {renderRightAction('modify', '#f8a501', 100, progress, 'md-create')}
-      {renderRightAction('delete', '#a21d38', 50, progress, 'md-trash')}
+      {renderRightAction('modify', '#f8a501', 100, progress, 'md-create', id)}
+      {renderRightAction('delete', '#a21d38', 50, progress, 'md-trash', id)}
     </View>
   );
   const collectRowRefs = (ref) => {
@@ -168,9 +208,6 @@ export default function DocsScreen({ navigation }) {
   const closeOtherSwipeables = identifier => {
     // Cuando abren un Row cerramos todos los demas
     // console.time("closeOtherSwipeables")
-    // Guardamos el Identifier para poder Referenciarlo cuando enviemos al Servidor
-    setSelectedDoc(identifier)
-
     rowRefs.forEach((ref) => {
       if (identifier != ref.props.identifier) {
         ref.close();
@@ -186,7 +223,7 @@ export default function DocsScreen({ navigation }) {
   // |      /     |   __|  |  . `  | |  |  |  ||   __|  |      /     
   // |  |\  \----.|  |____ |  |\   | |  '--'  ||  |____ |  |\  \----.
   // | _| `._____||_______||__| \__| |_______/ |_______|| _| `._____|                                                                
- 
+
   // Notas en la renderizacion del Contenido
   // se uso la propiedad flex para controlar el ancho de las columnas y las celdas segun leido en Post
   // No parece ser la mejor forma pero es funcional
@@ -223,7 +260,7 @@ export default function DocsScreen({ navigation }) {
               </DataTable.Header>
 
               {listOfData.map((item, key) => (
-                <Swipeable renderRightActions={renderRightActions} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
                   overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
                   <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
                     <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
@@ -233,7 +270,6 @@ export default function DocsScreen({ navigation }) {
                 </Swipeable>
               )
               )}
-
               {/* <DataTable.Pagination
             page={1}
             numberOfPages={3}

@@ -21,8 +21,10 @@ const LoginScreen = props => {
     // |      /     |   __|  |  . `  | |  |  |  ||   __|  |      /     
     // |  |\  \----.|  |____ |  |\   | |  '--'  ||  |____ |  |\  \----.
     // | _| `._____||_______||__| \__| |_______/ |_______|| _| `._____|
+
+    // El componente Keyboard es para evitar que el Keyboard se ponga sobre los inputs
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
             <View style={styles.cardContainer}>
                 <Card style={styles.card}>
                     {/* <Card.Title title="Card Title" subtitle="Card Subtitle" left={(props) => <Avatar.Icon {...props} icon="folder" />} /> */}
@@ -41,7 +43,7 @@ const LoginScreen = props => {
                     </Card.Actions>
                 </Card>
             </View>
-        </View>
+        </KeyboardAvoidingView>
     )
 }
 

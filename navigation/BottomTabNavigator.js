@@ -5,6 +5,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import AddRecordScreen from '../screens/AddRecordScreen';
 import DocsScreen from '../screens/DocsScreen';
+import LogoutScreen from '../screens/entrance/LogoutScreen';
 
 const BottomTab = createBottomTabNavigator();
 const INITIAL_ROUTE_NAME = 'Home';
@@ -50,6 +51,14 @@ export default function BottomTabNavigator({ navigation, route }) {
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
         }}
       />
+      <BottomTab.Screen
+        name="Logout"
+        component={LogoutScreen}
+        options={{
+          title: 'Logout',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-log-out" />,
+        }}
+      />
     </BottomTab.Navigator>
   );
 }
@@ -66,5 +75,7 @@ function getHeaderTitle(route) {
       return 'Añadir Registro';
     case 'Documentos':
       return 'Docs';
+    case 'Logout':
+      return 'Logout';
   }
 }

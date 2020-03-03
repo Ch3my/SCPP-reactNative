@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, AsyncStorage } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner } from 'react-native-paper';
@@ -58,6 +58,9 @@ export default function AddRecordScreen() {
             setFeedbackDescription('Debes llenar todos los campos xD')
         }
 
+        // Obtiene la Session 
+        var sessionHash = await AsyncStorage.getItem('session');
+        argins.sessionHash =  sessionHash
         // TODO. Verificar que se grabo
         axios.post('https://scpp.herokuapp.com/api/v1/api-endpoints/post-save-doc', argins)
             .then(function (response) {
@@ -147,7 +150,13 @@ export default function AddRecordScreen() {
     React.useEffect(() => {
         // Fetch dat from API and build Picker
         const getTipoDocAsync = async () => {
-            let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc').catch((err) => { console.log(err) })
+            // Obtiene la Session 
+            var sessionHash = await AsyncStorage.getItem('session');
+            let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc', {
+                params: {
+                    sessionHash
+                }
+            }).catch((err) => { console.log(err) })
             setListOfTipoDoc(tipoDoc.data)
         };
         getTipoDocAsync();
@@ -201,7 +210,7 @@ export default function AddRecordScreen() {
                     </View>
 
                     <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-                        <Text style={{marginTop: 30}}>Tipo Doc </Text>
+                        <Text style={{ marginTop: 30 }}>Tipo Doc </Text>
                         <View style={{ width: 300, height: 40, marginTop: 15 }}>
                             <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
                                 onValueChange={(itemValue, itemIndex) => onChangeTipoDoc(itemValue)}>

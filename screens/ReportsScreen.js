@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Picker, Platform } from 'react-native';
+import { StyleSheet, Text, View, Picker, Platform, AsyncStorage, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
@@ -14,9 +14,12 @@ import { DataTable, IconButton, Button, ProgressBar, TextInput } from 'react-nat
 import useStateWithCallback from 'use-state-with-callback';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+
 export default function ReportsScreen() {
 
   const [isLoading, setIsLoading] = React.useState(false);
+  const [rowRefs, setRowRefs] = React.useState([]);
 
   // Set moment locale
   moment.locale('es')
@@ -36,7 +39,14 @@ export default function ReportsScreen() {
   React.useEffect(() => {
     // Fetch dat from API and build Picker
     const getTipoDocAsync = async () => {
-      let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc').catch((err) => { console.log(err) })
+      // Obtiene la Session 
+      var sessionHash = await AsyncStorage.getItem('session');
+      let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc',
+        {
+          params: {
+            sessionHash
+          }
+        }).catch((err) => { console.log(err) })
       setListOfTipoDoc(tipoDoc.data)
     };
     getTipoDocAsync();
@@ -104,36 +114,36 @@ export default function ReportsScreen() {
   //   };
   //   getDataAsync();
   // }, []);
+  const getDataAsync = async () => {
+    setIsLoading(true)
 
-  const getData = () => {
-    React.useEffect(async () => {
-      setIsLoading(true)
+    // Asume Fechas que el usuario ingreso o Todo el Año en Defecto 
+    let fechaInicio = dateFechaInicio || moment().format('YYYY-01-01')
+    let fechaTermino = dateFechaTermino || moment().format('YYYY-12-31')
 
-      // Asume Fechas que el usuario ingreso o Todo el Año en Defecto 
-      let fechaInicio = dateFechaInicio || moment().format('YYYY-01-01')
-      let fechaTermino = dateFechaTermino || moment().format('YYYY-12-31')
+    let categoryReq = ''
+    // Verifica si la categoria es -1. Si lo es en realidad setea la variable envia como Undefined
+    if (category == -1) {
+      // No hacemos nada. Se va por Defecto Vacia
+    } else {
+      // Tiene algun Valor. Enviamos a la Req
+      categoryReq = category
+    }
 
-      let categoryReq = ''
-      // Verifica si la categoria es -1. Si lo es en realidad setea la variable envia como Undefined
-      if(category == -1){
-        // No hacemos nada. Se va por Defecto Vacia
-      } else {
-        // Tiene algun Valor. Enviamos a la Req
-        categoryReq = category
+    // Obtiene la Session 
+    var sessionHash = await AsyncStorage.getItem('session');
+    let docs = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-docs', {
+      params: {
+        fk_tipoDoc: tipoDoc,
+        fk_categoria: categoryReq,
+        fechaInicio,
+        fechaTermino,
+        sessionHash
       }
+    }).catch((err) => { console.log(err) })
+    setIsLoading(false)
+    setListOfData(docs.data)
 
-      let docs = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-docs', {
-        params: {
-          fk_tipoDoc: tipoDoc,
-          fk_categoria: categoryReq,
-          fechaInicio,
-          fechaTermino
-        }
-      }).catch((err) => { console.log(err) })
-      setIsLoading(false)
-      setListOfData(docs.data)
-
-    })
   }
 
   //  _______       ___      .___________. _______ .______    __    ______  __  ___  _______ .______      
@@ -177,6 +187,77 @@ export default function ReportsScreen() {
   const showDatePickerFechaTermino = () => {
     setShowDatePickerFechaTerminoFlag(true);
   };
+
+  // .______     ______   .___________.  ______   .__   __.  _______      _______.
+  // |   _  \   /  __  \  |           | /  __  \  |  \ |  | |   ____|    /       |
+  // |  |_)  | |  |  |  | `---|  |----`|  |  |  | |   \|  | |  |__      |   (----`
+  // |   _  <  |  |  |  |     |  |     |  |  |  | |  . `  | |   __|      \   \    
+  // |  |_)  | |  `--'  |     |  |     |  `--'  | |  |\   | |  |____ .----)   |   
+  // |______/   \______/      |__|      \______/  |__| \__| |_______||_______/    
+
+  // Funcion que renderiza Los botones al Swiped
+  const renderRightAction = (text, color, x, progress, icon, id) => {
+    // Calcula transformacion de los botones en funcion del movimiento
+    const trans = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [x, 0],
+    });
+    const pressHandler = async id => {
+      // alert(id)
+      if (text == 'modify') {
+        // Abrir Activity de Modificar
+      } else if (text == 'delete') {
+        try {
+          // Obtiene la Session 
+          var sessionHash = await AsyncStorage.getItem('session');
+          // Enviar al Servidor la eliminacion de este Registro y recargar la tabla
+          await axios.delete('https://scpp.herokuapp.com/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
+          getDataAsync();
+        } catch (e) {
+          console.log("Error al eliminar Documento")
+          console.log(e)
+        }
+      }
+    };
+    return (
+      <Animated.View style={{ flex: 1, transform: [{ translateX: trans }] }}>
+        <RectButton
+          style={[styles.rightAction, { backgroundColor: color }]}
+          onPress={() => pressHandler(id)}>
+          {/* <Text style={styles.actionText}>{text}</Text> */}
+          <Ionicons name={icon} size={20} style={{ marginBottom: -3 }} color={"white"} />
+        </RectButton>
+      </Animated.View>
+    );
+  };
+
+  const renderRightActions = (progress, id) => (
+    // La variable progress es algo que Swipeable Component entrega
+    <View style={{ width: 100, flexDirection: 'row' }}>
+      {renderRightAction('modify', '#f8a501', 100, progress, 'md-create', id)}
+      {renderRightAction('delete', '#a21d38', 50, progress, 'md-trash', id)}
+    </View>
+  );
+  const collectRowRefs = (ref) => {
+    // Obtenemos y guardamos todos los refs de los swipeables para poder ejecutar sus funciones internas
+    // (como cerrarlos) a voluntad
+    // Por alguna razon a veces se creaban refs nulls. Asi que añadimos una verificacion
+    // TODO. averiguar porque se crean refs Nulls. Es intermitente?
+    if (ref != null) {
+      rowRefs.push(ref)
+    }
+  }
+  const closeOtherSwipeables = identifier => {
+    // Cuando abren un Row cerramos todos los demas
+    // console.time("closeOtherSwipeables")
+    rowRefs.forEach((ref) => {
+      if (identifier != ref.props.identifier) {
+        ref.close();
+      }
+    });
+    // console.timeEnd("closeOtherSwipeables")
+  }
+
 
   return (
     <ScrollView style={styles.container}>
@@ -230,7 +311,7 @@ export default function ReportsScreen() {
 
         {/* Botones */}
         <View style={{ flexDirection: 'row-reverse' }}>
-          <Button mode="contained" style={styles.customInput} onPress={getData}>Procesar</Button>
+          <Button mode="contained" style={styles.customInput} onPress={getDataAsync}>Procesar</Button>
           <Button mode="outlined" style={{ marginBottom: 10, marginRight: 10 }}>Limpiar</Button>
         </View>
 
@@ -239,24 +320,27 @@ export default function ReportsScreen() {
           <ProgressBar progress={1} indeterminate />
         ) : (
             <DataTable>
-              <DataTable.Header>
-                <DataTable.Title style={{ flex: 0.4 }}>Fecha</DataTable.Title>
-                <DataTable.Title style={{ flex: 1.2 }}>Proposito</DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 0.5 }}>Monto</DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 0.4 }}>#</DataTable.Title>
+              <DataTable.Header style={styles.tableHeader}>
+                <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
+                  <Text style={styles.tableHeaderText}>Fecha</Text>
+                </DataTable.Title>
+                <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+                  <Text style={styles.tableHeaderText}>Proposito</Text>
+                </DataTable.Title>
+                <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+                  <Text style={styles.tableHeaderText}>Monto</Text>
+                </DataTable.Title>
               </DataTable.Header>
 
               {listOfData.map((item, key) => (
-                <DataTable.Row key={item.id}>
-                  <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
-                  <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
-                  <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
-                  <DataTable.Cell numeric style={{ flex: 0.4 }} onPress={() => { console.log("Pressed") }}>
-
-                    {/* <DeleteButton/> */}
-
-                  </DataTable.Cell>
-                </DataTable.Row>
+                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+                  overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
+                  <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
+                    <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
+                    <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
+                    <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
+                  </DataTable.Row>
+                </Swipeable>
               )
               )}
 
@@ -292,4 +376,19 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     marginTop: 5,
   },
+  rightAction: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  oddRows: {
+    backgroundColor: '#def5ff'
+  },
+  tableHeader: {
+    backgroundColor: '#4aaacf',
+    height: 36
+  },
+  tableHeaderText: {
+    fontSize: 13
+  }
 });

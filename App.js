@@ -117,19 +117,34 @@ export default function App(props) {
       }
       axios.post('https://scpp.herokuapp.com/api/v1/api-endpoints/entrance/login', argins
       ).then(response => {
-        console.log(response)
         if (response.status != 200) {
           console.log("El usuario no esta autorizado")
         } else {
           console.log("Usuario Autorizado")
           // Guardamos usuario y la navegacion se actualiza automaticamente al ejecutar dispatch. Que actualiza el Estado
-          AsyncStorage.setItem('session', JSON.stringify(response.data.sessionHash))
+          AsyncStorage.setItem('session', response.data.sessionHash)
           AsyncStorage.setItem('user', JSON.stringify(response.data.user))
           dispatch({ type: 'SIGN_IN', token: response.data.sessionHash });
         }
       }).catch(err => {
         console.error(err)
       })
+    },
+    logout: sessionHash => {
+      axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/entrance/logout', {
+        params: {
+          sessionHash: sessionHash
+        }
+      }).then(response => {
+        // TODO. Crear en el servidor y cliente metodo para que verifique que el logout fue exitoso
+        // Limpia las variables del AsyncStorage y modifica el Estado de la App
+        AsyncStorage.removeItem('session')
+        AsyncStorage.removeItem('user', JSON.stringify(response.data.user))
+        dispatch({ type: 'SIGN_OUT', token: response.data.sessionHash });
+      }).catch(err => {
+        console.error(err)
+      })
+
     }
   }
 
