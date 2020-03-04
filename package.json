@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@expo/vector-icons": "~10.0.0",
-    "@material-ui/core": "^4.9.4",
+    "@material-ui/core": "^4.9.5",
     "@react-native-community/datetimepicker": "^2.2.2",
     "@react-native-community/masked-view": "0.1.5",
-    "@react-navigation/bottom-tabs": "^5.0.0",
-    "@react-navigation/native": "^5.0.0",
-    "@react-navigation/stack": "^5.0.0",
+    "@react-navigation/bottom-tabs": "^5.1.1",
+    "@react-navigation/native": "^5.0.9",
+    "@react-navigation/stack": "^5.1.1",
     "@react-navigation/web": "~1.0.0-alpha.9",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
@@ -45,7 +45,7 @@
     "use-state-with-callback": "^1.0.18"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0",
+    "@babel/core": "^7.8.6",
     "babel-preset-expo": "~8.0.0",
     "jest-expo": "~36.0.1"
   },
