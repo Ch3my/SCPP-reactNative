@@ -83,37 +83,6 @@ export default function ReportsScreen() {
   // const [tipoDoc, setTipoDoc] = React.useState(1);
   const [listOfData, setListOfData] = React.useState([]);
 
-  // // Este hook siempre esta atento a la variable tipoDoc especificada como ultimo argumento
-  // // cada vez que la variable cambia se ejecuta este hook especificamente.
-  // // si no se especifica o es [] (vacio) el hook solo se ejecuta on loaded sin mirar variables
-  // React.useEffect(() => {
-  //   // Fetch dat from API to build Table
-  //   const getDataAsync = async () => {
-  //     setIsLoading(true)
-
-  //     // Para los gastos solo muestra los gastos del mes. Para los demas Documentos muestra 
-  //     // Todos los del Año
-  //     let fechaInicio = ''
-  //     let fechaTermino = ''
-  //     if (tipoDoc == 1) {
-  //       fechaInicio = moment().format('YYYY-MM') + '-01'
-  //       fechaTermino = moment().format('YYYY-MM') + '-31'
-  //     } else {
-  //       fechaInicio = moment().format('YYYY') + '-01-01'
-  //       fechaTermino = moment().format('YYYY') + '-12-01'
-  //     }
-  //     let docs = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-docs', {
-  //       params: {
-  //         fk_tipoDoc: tipoDoc,
-  //         fechaInicio,
-  //         fechaTermino
-  //       }
-  //     }).catch((err) => { console.log(err) })
-  //     setIsLoading(false)
-  //     setListOfData(docs.data)
-  //   };
-  //   getDataAsync();
-  // }, []);
   const getDataAsync = async () => {
     setIsLoading(true)
 
@@ -367,7 +336,7 @@ const styles = StyleSheet.create({
     marginTop: 15
   },
   customInput: {
-    marginBottom: 10
+    marginBottom: 10,
   },
   dateInputReadOnly: {
     width: '75%'

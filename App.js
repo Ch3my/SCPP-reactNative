@@ -5,7 +5,7 @@ import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
 import AuthContext from './context/AuthContext'
 import axios from 'axios'
@@ -49,6 +49,16 @@ export default function App(props) {
   }, []);
 
 
+  // Tema de React Paper
+  const theme = {
+    ...DefaultTheme,
+    roundness: 2,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: '#007bff',
+      accent: '#f1c40f',
+    },
+  };
 
   // __        ______     _______  __  .__   __.      ______   .______         .______       _______  _______   __  .______       _______   ______ .___________.
   // |  |      /  __  \   /  _____||  | |  \ |  |     /  __  \  |   _  \        |   _  \     |   ____||       \ |  | |   _  \     |   ____| /      ||           |
@@ -78,11 +88,17 @@ export default function App(props) {
             isSignout: true,
             userToken: null,
           };
+        case 'STACK_HEADER_CONTROL':
+          return {
+            ...prevState,
+            stackHeader: action.control,
+          };
       }
     },
     {
       isSignout: false,
       userToken: null,
+      stackHeader: true,
     }
   );
   // Obtenemos Datos de LocalStorage. Esta dentro de esta funcion para poder ejecutarlo de manera sincrona
@@ -144,7 +160,13 @@ export default function App(props) {
       }).catch(err => {
         console.error(err)
       })
-
+    },
+    stackHeaderControl: flag => {
+      console.log("stackHeaderControl")
+      dispatch({ type: 'STACK_HEADER_CONTROL', control: flag });
+    },
+    getStackHeaderControl: () => {
+      return state.stackHeader      
     }
   }
 
@@ -152,19 +174,38 @@ export default function App(props) {
     return null;
   } else {
     // Verificar si tiene session Iniciada o no. Redireccionar a Login en caso de No
+    // return (
+    //   <AuthContext.Provider value={authContextState}>
+    //     <PaperProvider>
+    //       <View style={styles.container}>
+    //         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+    //         <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
+    //           <Stack.Navigator>
+    //             {state.userToken ? (
+    //               <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: state.stackHeader }} />
+    //             ) : (
+    //                 <Stack.Screen name="Login" component={LoginScreen} />
+    //               )}
+    //           </Stack.Navigator>
+    //         </NavigationContainer>
+    //       </View>
+    //     </PaperProvider>
+    //   </AuthContext.Provider>
+    // );
+    // Navegacion sin Stack sobre el TabNavigator (En caso de que todas las tab sean stack y tengan su propio header)
     return (
       <AuthContext.Provider value={authContextState}>
-        <PaperProvider>
+        <PaperProvider theme={theme}>
           <View style={styles.container}>
             {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
             <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
-              <Stack.Navigator>
-                {state.userToken ? (
-                  <Stack.Screen name="Root" component={BottomTabNavigator} />
-                ) : (
+              {state.userToken ? (
+                <BottomTabNavigator />
+              ) : (
+                  <Stack.Navigator>
                     <Stack.Screen name="Login" component={LoginScreen} />
-                  )}
-              </Stack.Navigator>
+                  </Stack.Navigator>
+                )}
             </NavigationContainer>
           </View>
         </PaperProvider>
