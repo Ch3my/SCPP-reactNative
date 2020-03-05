@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, AsyncStorage, Dimensions } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, AsyncStorage, Dimensions, ActivityIndicator } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
-import {ProgressBar} from 'react-native-paper'
+import { ProgressBar } from 'react-native-paper'
 // https://github.com/jerairrest/react-chartjs-2
 // Solo funciona en el Browser
 // import { Doughnut, HorizontalBar, Line, Pie } from 'react-chartjs-2';
@@ -12,23 +12,57 @@ import { WebView } from 'react-native-webview';
 import axios from 'axios'
 import numeral from 'numeral'
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
 
   // Comentado porque Chartjs no Funciona en React native
   const [barData, setBarData] = React.useState({});
   const [lineData, setLineData] = React.useState({});
   const [pieData, setPieData] = React.useState({});
-  const [sessionHash, setSessionHash] = React.useState('');
+  const [sessionHash, setSessionHash] = React.useState(null);
+  const webviewRef = React.useRef();
+  const didMount = React.useRef(false)
 
-  // Obtenemos Hash para enviar al servidor y hacer renderizado alla
+
+  const ActivityIndicatorLoadingView = () => {
+    //making a view to show to while loading the webpage
+    return (
+      <ActivityIndicator
+        color="#007bff"
+        size="large"
+        style={{
+          top: 0, bottom: 0,
+          left: 0, right: 0,
+          position: 'absolute'
+        }}
+      />
+    );
+  }
+
+  const webViewReload = () => {
+    webviewRef.current.reload()
+  }
+  // Cada vez que le hacen Focus a esta pagina traemos los datos del Servidor
+  // si se cambia de tab y vuelve sin modificar el estado del componente la lista queda con 
+  // informacion absoleta (ejemplo, abrio aqui luego fue a añadir un registro y luego vuelve)
+  React.useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        if (didMount.current == true) {
+          webViewReload();
+        }
+      });
+      return unsubscribe;
+  }, [navigation]);
+
+    // Obtenemos Hash para enviar al servidor y hacer renderizado alla
   // Solo mostramos Webview que contiene una web especial
-  React.useEffect(()=> {
-    const getSessionHash = async()=> {
+  React.useEffect(() => {
+    const getSessionHash = async () => {
       var sessionHash = await AsyncStorage.getItem('session');
       setSessionHash(sessionHash)
+      didMount.current = true
     }
-    getSessionHash()
-  },[])
+    getSessionHash()   
+  }, [])
 
   // Comentado porque chartjs no funciona en ReactNative
   // React.useEffect(() => {
@@ -128,8 +162,11 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {console.log('https://scpp.herokuapp.com/api/v1/api-endpoints/onserver-graph-render?sessionHash='+sessionHash)}
-      <WebView source={{ uri: 'https://scpp.herokuapp.com/api/v1/api-endpoints/onserver-graph-render?sessionHash='+sessionHash }} height={700} style={{flex: 1}} />
+      {sessionHash != null && (
+        <WebView source={{ uri: 'https://scpp.herokuapp.com/api/v1/api-endpoints/onserver-graph-render?sessionHash=' + sessionHash }}
+          height={700} style={{ flex: 1 }} renderLoading={ActivityIndicatorLoadingView} startInLoadingState={true} ref={webviewRef} />
+      )}
+
       {/* Esto es de Charjs pero solo funciona en el Browser :'( */}
       {/* <Line data={lineData} options={{
         tooltips: {
