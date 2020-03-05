@@ -1,118 +1,137 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, AsyncStorage } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, AsyncStorage, Dimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
-
+import {ProgressBar} from 'react-native-paper'
 // https://github.com/jerairrest/react-chartjs-2
-import { Doughnut, HorizontalBar, Line, Pie } from 'react-chartjs-2';
+// Solo funciona en el Browser
+// import { Doughnut, HorizontalBar, Line, Pie } from 'react-chartjs-2';
+
+import { WebView } from 'react-native-webview';
+
 import axios from 'axios'
 import numeral from 'numeral'
 
 export default function HomeScreen() {
 
+  // Comentado porque Chartjs no Funciona en React native
   const [barData, setBarData] = React.useState({});
   const [lineData, setLineData] = React.useState({});
   const [pieData, setPieData] = React.useState({});
+  const [sessionHash, setSessionHash] = React.useState('');
 
-
-  React.useEffect(() => {
-    const getBarData = async () => {
+  // Obtenemos Hash para enviar al servidor y hacer renderizado alla
+  // Solo mostramos Webview que contiene una web especial
+  React.useEffect(()=> {
+    const getSessionHash = async()=> {
       var sessionHash = await AsyncStorage.getItem('session');
-      var barDataReq = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/graph/category-bar', {
-        params: {
-          sessionHash
-        }
-      })
-      const barGraphData = {
-        labels: barDataReq.data.catNames,
-        datasets: [
-          {
-            label: 'Categoria',
-            backgroundColor: 'rgba(75, 192, 192, 0.8)',
-            borderColor: 'rgb(75, 192, 192)',
-            borderWidth: 1,
-            hoverBackgroundColor: 'rgba(255,99,132,0.4)',
-            hoverBorderColor: 'rgba(255,99,132,1)',
-            data: barDataReq.data.catValues
-          }
-        ]
-      };
-      setBarData(barGraphData)
+      setSessionHash(sessionHash)
     }
-    const getLineData = async () => {
-      var sessionHash = await AsyncStorage.getItem('session');
-      var lineDataReq = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/graph/historic-bar', {
-        params: {
-          sessionHash
-        }
-      })
-      // Aunque la API entrega los ultimos 12 Meses nosotros cortamos en los 5 ultimos
-      // porque la pantalla del Telefono es mas pequeña y no caen mas de manera efectiva
-      const lineGraphData = {
-        labels: lineDataReq.data.labels.slice(Math.max(lineDataReq.data.labels.length - 5, 0)),
-        datasets: [{
-          label: 'Gastos',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          borderColor: 'rgba(255, 99, 132)',
-          borderWidth: 1,
-          hoverBackgroundColor: 'rgba(255,99,132,0.4)',
-          hoverBorderColor: 'rgba(255,99,132,1)',
-          data: lineDataReq.data.gastosData.slice(Math.max(lineDataReq.data.gastosData.length - 5, 0)),
-          lineTension: 0.1,
-        }, {
-          label: 'Ahorros',
-          backgroundColor: 'rgb(255, 205, 86, 0.2)',
-          borderColor: 'rgb(255, 205, 86)',
-          borderWidth: 1,
-          hoverBackgroundColor: 'rgba(255,99,132,0.4)',
-          hoverBorderColor: 'rgba(255,99,132,1)',
-          data: lineDataReq.data.ahorrosData.slice(Math.max(lineDataReq.data.ahorrosData.length - 5, 0)),
-          lineTension: 0.1,
-        }, {
-          label: 'Ingresos',
-          backgroundColor: 'rgb(54, 162, 235, 0.2)',
-          borderColor: 'rgb(54, 162, 235)',
-          borderWidth: 1,
-          hoverBackgroundColor: 'rgba(255,99,132,0.4)',
-          hoverBorderColor: 'rgba(255,99,132,1)',
-          data: lineDataReq.data.ingresosData.slice(Math.max(lineDataReq.data.ingresosData.length - 5, 0)),
-          lineTension: 0.1,
-        }]
-      };
-      setLineData(lineGraphData)
-    }
-    const getPieData = async () => {
-      var sessionHash = await AsyncStorage.getItem('session');
-      var pieDataReq = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/graph/tipo-doc-pie', {
-        params: {
-          sessionHash
-        }
-      })
-      const lineGraphData = {
-        labels: pieDataReq.data.tipoDocName,
-        datasets: [{
-					data: pieDataReq.data.tipoDocVal,
-					backgroundColor: [
-            'rgb(255, 99, 132)',
-						'rgb(54, 162, 235)',
-						'rgb(153, 102, 255)',
-						'rgb(75, 192, 192)',
-						'rgb(54, 162, 235)',
-					],
-				}],
-      }
-      setPieData(lineGraphData)
-    }
+    getSessionHash()
+  },[])
 
-    getBarData()
-    getLineData()
-    getPieData()
-  }, [])
+  // Comentado porque chartjs no funciona en ReactNative
+  // React.useEffect(() => {
+  //   const getBarData = async () => {
+  //     var sessionHash = await AsyncStorage.getItem('session');
+  //     setSessionHash(sessionHash)
+  //     var barDataReq = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/graph/category-bar', {
+  //       params: {
+  //         sessionHash
+  //       }
+  //     })
+  //     const barGraphData = {
+  //       labels: barDataReq.data.catNames,
+  //       datasets: [
+  //         {
+  //           label: 'Categoria',
+  //           backgroundColor: 'rgba(75, 192, 192, 0.8)',
+  //           borderColor: 'rgb(75, 192, 192)',
+  //           borderWidth: 1,
+  //           hoverBackgroundColor: 'rgba(255,99,132,0.4)',
+  //           hoverBorderColor: 'rgba(255,99,132,1)',
+  //           data: barDataReq.data.catValues
+  //         }
+  //       ]
+  //     };
+  //     setBarData(barGraphData)
+  //   }
+  //   const getLineData = async () => {
+  //     // var sessionHash = await AsyncStorage.getItem('session');
+  //     var lineDataReq = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/graph/historic-bar', {
+  //       params: {
+  //         sessionHash
+  //       }
+  //     })
+  //     // Aunque la API entrega los ultimos 12 Meses nosotros cortamos en los 5 ultimos
+  //     // porque la pantalla del Telefono es mas pequeña y no caen mas de manera efectiva
+  //     const lineGraphData = {
+  //       labels: lineDataReq.data.labels.slice(Math.max(lineDataReq.data.labels.length - 5, 0)),
+  //       datasets: [{
+  //         label: 'Gastos',
+  //         backgroundColor: 'rgba(255, 99, 132, 0.2)',
+  //         borderColor: 'rgba(255, 99, 132)',
+  //         borderWidth: 1,
+  //         hoverBackgroundColor: 'rgba(255,99,132,0.4)',
+  //         hoverBorderColor: 'rgba(255,99,132,1)',
+  //         data: lineDataReq.data.gastosData.slice(Math.max(lineDataReq.data.gastosData.length - 5, 0)),
+  //         lineTension: 0.1,
+  //       }, {
+  //         label: 'Ahorros',
+  //         backgroundColor: 'rgb(255, 205, 86, 0.2)',
+  //         borderColor: 'rgb(255, 205, 86)',
+  //         borderWidth: 1,
+  //         hoverBackgroundColor: 'rgba(255,99,132,0.4)',
+  //         hoverBorderColor: 'rgba(255,99,132,1)',
+  //         data: lineDataReq.data.ahorrosData.slice(Math.max(lineDataReq.data.ahorrosData.length - 5, 0)),
+  //         lineTension: 0.1,
+  //       }, {
+  //         label: 'Ingresos',
+  //         backgroundColor: 'rgb(54, 162, 235, 0.2)',
+  //         borderColor: 'rgb(54, 162, 235)',
+  //         borderWidth: 1,
+  //         hoverBackgroundColor: 'rgba(255,99,132,0.4)',
+  //         hoverBorderColor: 'rgba(255,99,132,1)',
+  //         data: lineDataReq.data.ingresosData.slice(Math.max(lineDataReq.data.ingresosData.length - 5, 0)),
+  //         lineTension: 0.1,
+  //       }]
+  //     };
+  //     setLineData(lineGraphData)
+  //   }
+  //   const getPieData = async () => {
+  //     // var sessionHash = await AsyncStorage.getItem('session');
+  //     var pieDataReq = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/graph/tipo-doc-pie', {
+  //       params: {
+  //         sessionHash
+  //       }
+  //     })
+  //     const lineGraphData = {
+  //       labels: pieDataReq.data.tipoDocName,
+  //       datasets: [{
+  //         data: pieDataReq.data.tipoDocVal,
+  //         backgroundColor: [
+  //           'rgb(255, 99, 132)',
+  //           'rgb(54, 162, 235)',
+  //           'rgb(153, 102, 255)',
+  //           'rgb(75, 192, 192)',
+  //           'rgb(54, 162, 235)',
+  //         ],
+  //       }],
+  //     }
+  //     setPieData(lineGraphData)
+  //   }
 
+  //   getBarData()
+  //   getLineData()
+  //   getPieData()
+  // }, [])
 
   return (
     <ScrollView style={styles.container}>
-            <Line data={lineData} options={{
+      {console.log('https://scpp.herokuapp.com/api/v1/api-endpoints/onserver-graph-render?sessionHash='+sessionHash)}
+      <WebView source={{ uri: 'https://scpp.herokuapp.com/api/v1/api-endpoints/onserver-graph-render?sessionHash='+sessionHash }} height={700} style={{flex: 1}} />
+      {/* Esto es de Charjs pero solo funciona en el Browser :'( */}
+      {/* <Line data={lineData} options={{
         tooltips: {
           custom: tooltipItem => {
             console.log(tooltipItem)
@@ -181,15 +200,10 @@ export default function HomeScreen() {
         }
       }} />
 
-      <Pie data={pieData} />
+      <Pie data={pieData} /> */}
     </ScrollView>
   );
 }
-
-HomeScreen.navigationOptions = {
-  header: null,
-};
-
 
 const styles = StyleSheet.create({
   container: {
