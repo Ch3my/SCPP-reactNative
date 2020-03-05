@@ -164,6 +164,8 @@ export default function DocsScreen({ navigation }) {
       // alert(id)
       if (text == 'modify') {
         // Abrir Activity de Modificar
+        // Navigate to the Edit route with params 
+        navigation.navigate('EditRecord', { id });
       } else if (text == 'delete') {
         try {
           // Obtiene la Session 

@@ -5,6 +5,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import AddRecordScreen from '../screens/AddRecordScreen';
 import DocsScreen from '../screens/DocsScreen';
+import EditRecordScreen from '../screens/EditRecordScreen';
 
 import { createStackNavigator } from '@react-navigation/stack';
 import ConfigNavigator from './ConfigNavigator';
@@ -32,15 +33,19 @@ export default function BottomTabNavigator({ navigation, route }) {
 
   const DocsNavigator = createStackNavigator();
   const DocsScreenStack = () => {
+    // Añadimos la Activity de Edicion de Documento
     return (
       <DocsNavigator.Navigator>
         <DocsNavigator.Screen name="Docs" component={DocsScreen} />
+        <DocsNavigator.Screen name="EditRecord" component={EditRecordScreen} options={{ title: 'Editar Registro' }} />
       </DocsNavigator.Navigator>
     )
   }
 
   const AddRecordNavigator = createStackNavigator();
   const AddRecordScreenStack = () => {
+    // Añadimos la Activity de Edicion de Documento
+    // Porque sino es parte del mismo stack no muestra BackButton
     return (
       <AddRecordNavigator.Navigator>
         <AddRecordNavigator.Screen name="Añadir Registro" component={AddRecordScreen} />
@@ -53,6 +58,7 @@ export default function BottomTabNavigator({ navigation, route }) {
     return (
       <ReportsNavigator.Navigator>
         <ReportsNavigator.Screen name="Reportes" component={ReportsScreen} />
+        <DocsNavigator.Screen name="EditRecord" component={EditRecordScreen} options={{ title: 'Editar Registro' }} />
       </ReportsNavigator.Navigator>
     )
   }

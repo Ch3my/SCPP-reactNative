@@ -16,7 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
-export default function ReportsScreen() {
+export default function ReportsScreen({ navigation }) {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [rowRefs, setRowRefs] = React.useState([]);
@@ -175,6 +175,8 @@ export default function ReportsScreen() {
       // alert(id)
       if (text == 'modify') {
         // Abrir Activity de Modificar
+        // Navigate to the Edit route with params 
+        navigation.navigate('EditRecord', { id });      
       } else if (text == 'delete') {
         try {
           // Obtiene la Session 

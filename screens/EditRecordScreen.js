@@ -12,7 +12,12 @@ import useStateWithCallback from 'use-state-with-callback';
 
 import moment from 'moment'
 
-export default function AddRecordScreen() {
+export default function AddRecordScreen({route}) {
+    // Obtenes Datos que nos enviaron por la ruta
+
+    const { id } = route.params;
+
+
     // _______   ______   .______      .___  ___.     _______       ___      .___________.     ___      
     // |   ____| /  __  \  |   _  \     |   \/   |    |       \     /   \     |           |    /   \     
     // |  |__   |  |  |  | |  |_)  |    |  \  /  |    |  .--.  |   /  ^  \    `---|  |----`   /  ^  \    
@@ -43,8 +48,9 @@ export default function AddRecordScreen() {
     //  |  |  |  |  /  _____  \  |  |\   | |  '--'  ||  `----.|  |____ |  |       /  _____  \  |  |\  \----..----)   |   |  | |  |\   | |  |__| | 
     //  |__|  |__| /__/     \__\ |__| \__| |_______/ |_______||_______|| _|      /__/     \__\ | _| `._____||_______/    |__| |__| \__|  \______| 
 
-    const saveNewRecord = async () => {
+    const updateRecord = async () => {
         var argins = {
+            id,
             fk_categoria: category,
             fk_tipoDoc: tipoDoc,
             proposito: proposito,
@@ -60,9 +66,9 @@ export default function AddRecordScreen() {
 
         // Obtiene la Session 
         var sessionHash = await AsyncStorage.getItem('session');
-        argins.sessionHash =  sessionHash
+        argins.sessionHash = sessionHash
         // TODO. Verificar que se grabo
-        axios.post('https://scpp.herokuapp.com/api/v1/api-endpoints/post-save-doc', argins)
+        axios.put('https://scpp.herokuapp.com/api/v1/api-endpoints/update-doc', argins)
             .then(function (response) {
                 if (response.data.hasErrors) {
                     setFeedback(true)
@@ -174,6 +180,35 @@ export default function AddRecordScreen() {
     }
 
 
+    //  _______  _______ .___________.  ______  __    __     .______       _______   ______   ______   .______       _______  
+    //  |   ____||   ____||           | /      ||  |  |  |    |   _  \     |   ____| /      | /  __  \  |   _  \     |       \ 
+    //  |  |__   |  |__   `---|  |----`|  ,----'|  |__|  |    |  |_)  |    |  |__   |  ,----'|  |  |  | |  |_)  |    |  .--.  |
+    //  |   __|  |   __|      |  |     |  |     |   __   |    |      /     |   __|  |  |     |  |  |  | |      /     |  |  |  |
+    //  |  |     |  |____     |  |     |  `----.|  |  |  |    |  |\  \----.|  |____ |  `----.|  `--'  | |  |\  \----.|  '--'  |
+    //  |__|     |_______|    |__|      \______||__|  |__|    | _| `._____||_______| \______| \______/  | _| `._____||_______/ 
+
+    React.useEffect(() => {
+        const fetchCurrentRecord = async () => {
+            // Obtiene la Session 
+            var sessionHash = await AsyncStorage.getItem('session');
+            let doc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-doc', {
+                params: {
+                    sessionHash,
+                    id
+                }
+            }).catch((err) => { console.log(err) })
+            // Guardamos los datos en el formulario para que el usuario Edite
+            setMonto(doc.data.monto.toString())
+            setProposito(doc.data.proposito)
+            setDate(doc.data.fecha)
+            setCategory(doc.data.fk_categoria)
+            setTipoDoc(doc.data.fk_tipoDoc)
+            console.log(doc.data)
+        }
+        fetchCurrentRecord()
+    }, [])
+
+
     return (
         <View style={styles.container}>
             <Banner visible={feedback} style={{backgroundColor: '#def5ff'}}
@@ -235,7 +270,7 @@ export default function AddRecordScreen() {
                         </View>
                     )}
 
-                    <Button mode="contained" onPress={saveNewRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
+                    <Button mode="contained" onPress={updateRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
                     <Button mode="outlined" style={styles.customInput, styles.saveButton} onPress={clearForm}>Limpiar</Button>
 
                 </ScrollView>

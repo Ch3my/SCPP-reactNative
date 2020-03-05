@@ -37,7 +37,6 @@ export default function HomeScreen() {
           }
         ]
       };
-      console.log(barDataReq.data)
       setBarData(barGraphData)
     }
     const getLineData = async () => {
@@ -47,7 +46,6 @@ export default function HomeScreen() {
           sessionHash
         }
       })
-      console.log(lineDataReq.data)
       // Aunque la API entrega los ultimos 12 Meses nosotros cortamos en los 5 ultimos
       // porque la pantalla del Telefono es mas pequeña y no caen mas de manera efectiva
       const lineGraphData = {
