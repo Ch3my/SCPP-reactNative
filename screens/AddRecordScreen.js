@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, AsyncStorage } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, AsyncStorage, KeyboardAvoidingView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner } from 'react-native-paper';
@@ -174,8 +174,10 @@ export default function AddRecordScreen() {
     }
 
 
+    // Usamos KeyboardAvoidingView para poder hacer click sin tener que ocultar el Keyboard
+    // Al ingresar un gasto. No funciono, pero se deja 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
             <Banner visible={feedback} style={{backgroundColor: '#def5ff'}}
                 actions={[{
                     label: 'Okay',
@@ -240,7 +242,7 @@ export default function AddRecordScreen() {
 
                 </ScrollView>
             </View>
-        </View >
+        </ KeyboardAvoidingView>
 
     );
 }
