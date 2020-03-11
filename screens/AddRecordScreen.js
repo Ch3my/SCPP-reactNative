@@ -173,11 +173,8 @@ export default function AddRecordScreen() {
         }
     }
 
-
-    // Usamos KeyboardAvoidingView para poder hacer click sin tener que ocultar el Keyboard
-    // Al ingresar un gasto. No funciono, pero se deja 
     return (
-        <KeyboardAvoidingView style={styles.container} behavior="padding">
+        <View style={styles.container} behavior="padding">
             <Banner visible={feedback} style={{backgroundColor: '#def5ff'}}
                 actions={[{
                     label: 'Okay',
@@ -193,7 +190,8 @@ export default function AddRecordScreen() {
                 <Text>{feedbackDescription}</Text>
             </Banner>
             <View>
-                <ScrollView style={styles.contentContainer}>
+                {/* keyboardShouldPersistTaps='handled' para poder hacer click aun cuando este el teclado activo */}
+                <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps='handled'>
 
                     <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
                         onChangeText={text => setMonto(text)} keyboardType={'numeric'} />
@@ -242,7 +240,7 @@ export default function AddRecordScreen() {
 
                 </ScrollView>
             </View>
-        </ KeyboardAvoidingView>
+        </ View>
 
     );
 }
