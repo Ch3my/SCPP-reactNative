@@ -8,7 +8,7 @@ import axios from 'axios'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import useStateWithCallback from 'use-state-with-callback';
 
-// import { TextInputMask } from 'react-native-masked-text'
+import { TextInputMask } from 'react-native-masked-text'
 
 import moment from 'moment'
 
@@ -48,7 +48,7 @@ export default function AddRecordScreen() {
             fk_categoria: category,
             fk_tipoDoc: tipoDoc,
             proposito: proposito,
-            monto: monto,
+            monto: monto.replace(/\,/g, "").replace(/\$/g, "").trim(),
             fecha: moment(date).format('YYYY-MM-DD')
         }
 
@@ -194,7 +194,20 @@ export default function AddRecordScreen() {
                 <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps='handled'>
 
                     <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
-                        onChangeText={text => setMonto(text)} keyboardType={'numeric'} />
+                        onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}  
+                        render={props =>
+                            <TextInputMask
+                              {...props}
+                              type={'money'} value={monto}
+                              options={{
+                                precision: 0,
+                                separator: '.',
+                                delimiter: ',',
+                                unit: '$ ',
+                                suffixUnit: ''
+                              }}                       
+                              onChangeText={text => setMonto(text)}                            />
+                          } />
                     <TextInput mode="outlined" dense='true' label='Propósito' value={proposito} style={styles.customInput}
                         onChangeText={text => setProposito(text)} />
 

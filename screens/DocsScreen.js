@@ -35,7 +35,8 @@ export default function DocsScreen({ navigation }) {
   const [listOfData, setListOfData] = React.useState([]);
   const [tipoDoc, setTipoDoc] = React.useState(1);
   const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
-  // const [selectedDoc, setSelectedDoc] = React.useState(-1);
+  // Variable que contiene la suma de todas las filas mostradas
+  const sumaTotal = React.useRef(0);
   const [rowRefs, setRowRefs] = React.useState([]);
   // Ref es como State solo que no se recarga cada vez que el componente lo hace
   // Lo usamos para diferenciar entre primera renderizacion y eventos updated
@@ -83,6 +84,8 @@ export default function DocsScreen({ navigation }) {
 
   const getDataAsync = async () => {
     setIsLoading(true)
+    // Reseteamos la variable que suma las filas mostradas en la tabla para volver a sumar
+    sumaTotal.current = 0
 
     // Para los gastos solo muestra los gastos del mes. Para los demas Documentos muestra 
     // Todos los del Año
@@ -110,6 +113,10 @@ export default function DocsScreen({ navigation }) {
     if (docs.data.hasErrors) {
       logout(sessionHash)
     } else {
+      // Recorremos el array para sumar el Total
+      for(var doc of docs.data) {
+        sumaTotal.current += doc.monto
+      }
       setIsLoading(false)
       setListOfData(docs.data)
     }
@@ -248,37 +255,42 @@ export default function DocsScreen({ navigation }) {
         {isLoading ? (
           <ProgressBar indeterminate />
         ) : (
-            <DataTable>
-              <DataTable.Header style={styles.tableHeader}>
-                <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Fecha</Text>
-                </DataTable.Title>
-                <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Proposito</Text>
-                </DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Monto</Text>
-                </DataTable.Title>
-              </DataTable.Header>
+            <View>
+              <DataTable>
+                <DataTable.Header style={styles.tableHeader}>
+                  <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
+                    <Text style={styles.tableHeaderText}>Fecha</Text>
+                  </DataTable.Title>
+                  <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+                    <Text style={styles.tableHeaderText}>Proposito</Text>
+                  </DataTable.Title>
+                  <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+                    <Text style={styles.tableHeaderText}>Monto</Text>
+                  </DataTable.Title>
+                </DataTable.Header>
 
-              {listOfData.map((item, key) => (
-                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
-                  overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                  <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
-                    <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
-                  </DataTable.Row>
-                </Swipeable>
-              )
-              )}
-              {/* <DataTable.Pagination
+                {listOfData.map((item, key) => (
+                  <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+                    overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
+                    <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
+                      <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
+                      <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
+                      <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
+                    </DataTable.Row>
+                  </Swipeable>
+                )
+                )}
+                {/* <DataTable.Pagination
             page={1}
             numberOfPages={3}
             onPageChange={(page) => { console.log(page); }}
             label="1-2 of 6"
           /> */}
-            </DataTable>
+              </DataTable>
+              <View style={styles.totalDiv}>
+                <Text>Total $ {numeral(sumaTotal.current).format('0,0')}</Text>
+              </View>
+            </View>
           )}
 
       </View>
@@ -316,5 +328,10 @@ const styles = StyleSheet.create({
   },
   tableHeaderText: {
     fontSize: 13
+  },
+  totalDiv: {
+    alignItems: 'flex-end',
+    padding: 15,
+    marginTop: 20
   }
 });
