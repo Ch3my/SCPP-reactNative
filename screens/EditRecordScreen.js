@@ -8,11 +8,11 @@ import axios from 'axios'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import useStateWithCallback from 'use-state-with-callback';
 
-// import { TextInputMask } from 'react-native-masked-text'
+import { TextInputMask } from 'react-native-masked-text'
 
 import moment from 'moment'
 
-export default function AddRecordScreen({route}) {
+export default function AddRecordScreen({ route }) {
     // Obtenes Datos que nos enviaron por la ruta
 
     const { id } = route.params;
@@ -27,7 +27,8 @@ export default function AddRecordScreen({route}) {
 
     const [proposito, setProposito] = React.useState('')
     const [monto, setMonto] = React.useState('')
-
+    const [isNegativeAmount, setIsNegativeAmount] = React.useState(false)
+    const [dynamicButtomColor, setDynamicButtomColor] = React.useState('#007bff')
 
     //  __    __       _______. _______ .______          _______  _______  _______  _______  .______        ___        ______  __  ___ 
     //  |  |  |  |     /       ||   ____||   _  \        |   ____||   ____||   ____||       \ |   _  \      /   \      /      ||  |/  / 
@@ -49,12 +50,20 @@ export default function AddRecordScreen({route}) {
     //  |__|  |__| /__/     \__\ |__| \__| |_______/ |_______||_______|| _|      /__/     \__\ | _| `._____||_______/    |__| |__| \__|  \______| 
 
     const updateRecord = async () => {
+        // Parece que se puede usar un metodo getRaw su usamos un ref en el Masked input
+        // por ahora solo lo manejamos asi
+        var calculatedMonto = monto.replace(/\,/g, "").replace(/\$/g, "").trim()
+        // Si esta marcado el Flag de Numero Negativo, lo ponemos negativo
+        if (isNegativeAmount) {
+            calculatedMonto = calculatedMonto * -1
+        }
+
         var argins = {
             id,
             fk_categoria: category,
             fk_tipoDoc: tipoDoc,
             proposito: proposito,
-            monto: monto,
+            monto: calculatedMonto,
             fecha: moment(date).format('YYYY-MM-DD')
         }
 
@@ -208,10 +217,22 @@ export default function AddRecordScreen({route}) {
         fetchCurrentRecord()
     }, [])
 
+    // Funcion que marca el flag de numero negativo. Ya que no podemos enmascarar un numero negativo al parecer
+    // lo que provoca que no podamos grabar un numero negativo
+    const setNegativeAmount = () => {
+        setIsNegativeAmount(!isNegativeAmount)
+        if (!isNegativeAmount) {
+            // Amarillo
+            setDynamicButtomColor('#f1c40f')
+        } else {
+            // Reset to InitalState. Azul
+            setDynamicButtomColor('#007bff')
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <Banner visible={feedback} style={{backgroundColor: '#def5ff'}}
+            <Banner visible={feedback} style={{ backgroundColor: '#def5ff' }}
                 actions={[{
                     label: 'Okay',
                     onPress: () => setFeedback(false),
@@ -227,9 +248,28 @@ export default function AddRecordScreen({route}) {
             </Banner>
             <View>
                 <ScrollView style={styles.contentContainer}>
+                    <View style={{ flexDirection: 'row' }}>
+                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput, styles.dateInputReadOnly}
+                            onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}
+                            render={props =>
+                                <TextInputMask
+                                    {...props}
+                                    type={'money'} value={monto}
+                                    options={{
+                                        precision: 0,
+                                        separator: '.',
+                                        delimiter: ',',
+                                        unit: '$ ',
+                                        suffixUnit: ''
+                                    }} />
+                            } />
 
-                    <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
-                        onChangeText={text => setMonto(text)} keyboardType={'numeric'} />
+                        {/* <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
+                            onChangeText={text => setMonto(text)} keyboardType={'numeric'} /> */}
+                        <Button mode="contained" onPress={setNegativeAmount} style={styles.dateInputButton} color={dynamicButtomColor}> ! </Button>
+
+                    </View>
+
                     <TextInput mode="outlined" dense='true' label='Propósito' value={proposito} style={styles.customInput}
                         onChangeText={text => setProposito(text)} />
 

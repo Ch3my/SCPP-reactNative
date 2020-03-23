@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, AsyncStorage, KeyboardAvoidingView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
-import { TextInput, Button, Banner } from 'react-native-paper';
+import { TextInput, Button, Banner, Checkbox } from 'react-native-paper';
 import axios from 'axios'
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,6 +22,9 @@ export default function AddRecordScreen() {
 
     const [proposito, setProposito] = React.useState('')
     const [monto, setMonto] = React.useState('')
+    const [isNegativeAmount, setIsNegativeAmount] = React.useState(false)
+    const [dynamicButtomColor, setDynamicButtomColor] = React.useState('#007bff')
+
 
 
     //  __    __       _______. _______ .______          _______  _______  _______  _______  .______        ___        ______  __  ___ 
@@ -44,11 +47,19 @@ export default function AddRecordScreen() {
     //  |__|  |__| /__/     \__\ |__| \__| |_______/ |_______||_______|| _|      /__/     \__\ | _| `._____||_______/    |__| |__| \__|  \______| 
 
     const saveNewRecord = async () => {
+        // Parece que se puede usar un metodo getRaw su usamos un ref en el Masked input
+        // por ahora solo lo manejamos asi
+        var calculatedMonto = monto.replace(/\,/g, "").replace(/\$/g, "").trim()
+        // Si esta marcado el Flag de Numero Negativo, lo ponemos negativo
+        if(isNegativeAmount) {
+            calculatedMonto = calculatedMonto * -1
+        }
+
         var argins = {
             fk_categoria: category,
             fk_tipoDoc: tipoDoc,
             proposito: proposito,
-            monto: monto.replace(/\,/g, "").replace(/\$/g, "").trim(),
+            monto: calculatedMonto,
             fecha: moment(date).format('YYYY-MM-DD')
         }
 
@@ -60,7 +71,7 @@ export default function AddRecordScreen() {
 
         // Obtiene la Session 
         var sessionHash = await AsyncStorage.getItem('session');
-        argins.sessionHash =  sessionHash
+        argins.sessionHash = sessionHash
         // TODO. Verificar que se grabo
         axios.post('https://scpp.herokuapp.com/api/v1/api-endpoints/post-save-doc', argins)
             .then(function (response) {
@@ -173,9 +184,22 @@ export default function AddRecordScreen() {
         }
     }
 
+    // Funcion que marca el flag de numero negativo. Ya que no podemos enmascarar un numero negativo al parecer
+    // lo que provoca que no podamos grabar un numero negativo
+    const setNegativeAmount = () => {
+        setIsNegativeAmount(!isNegativeAmount)
+        if(!isNegativeAmount) {
+            // Amarillo
+            setDynamicButtomColor('#f1c40f')
+        } else {
+            // Reset to InitalState. Azul
+            setDynamicButtomColor('#007bff')
+        }
+    }
+
     return (
         <View style={styles.container} behavior="padding">
-            <Banner visible={feedback} style={{backgroundColor: '#def5ff'}}
+            <Banner visible={feedback} style={{ backgroundColor: '#def5ff' }}
                 actions={[{
                     label: 'Okay',
                     onPress: () => setFeedback(false),
@@ -193,21 +217,24 @@ export default function AddRecordScreen() {
                 {/* keyboardShouldPersistTaps='handled' para poder hacer click aun cuando este el teclado activo */}
                 <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps='handled'>
 
-                    <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
-                        onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}  
-                        render={props =>
-                            <TextInputMask
-                              {...props}
-                              type={'money'} value={monto}
-                              options={{
-                                precision: 0,
-                                separator: '.',
-                                delimiter: ',',
-                                unit: '$ ',
-                                suffixUnit: ''
-                              }}                       
-                              onChangeText={text => setMonto(text)}                            />
-                          } />
+                    <View style={{ flexDirection: 'row' }}>
+                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput, styles.dateInputReadOnly}
+                            onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}
+                            render={props =>
+                                <TextInputMask
+                                    {...props}
+                                    type={'money'} value={monto}
+                                    options={{
+                                        precision: 0,
+                                        separator: '.',
+                                        delimiter: ',',
+                                        unit: '$ ',
+                                        suffixUnit: ''
+                                    }} />
+                            } />
+                        <Button mode="contained" onPress={setNegativeAmount} style={styles.dateInputButton} color={dynamicButtomColor}> ! </Button>
+                    </View>
+
                     <TextInput mode="outlined" dense='true' label='Propósito' value={proposito} style={styles.customInput}
                         onChangeText={text => setProposito(text)} />
 
