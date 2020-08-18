@@ -252,7 +252,7 @@ export default function AddRecordScreen() {
                     <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
                         <Text style={{ marginTop: 30 }}>Tipo Doc </Text>
                         <View style={{ width: 300, height: 40, marginTop: 15 }}>
-                            <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
+                            <Picker selectedValue={tipoDoc} style={styles.customInput}
                                 onValueChange={(itemValue, itemIndex) => onChangeTipoDoc(itemValue)}>
                                 {listOfTipoDoc.map((item, key) => (
                                     <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
@@ -276,8 +276,8 @@ export default function AddRecordScreen() {
                     )}
 
                     <Button mode="contained" onPress={saveNewRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
-                    <Button mode="outlined" style={styles.customInput, styles.saveButton} onPress={clearForm}>Limpiar</Button>
-
+                    <Button mode="outlined" style={{marginTop:10}} onPress={clearForm}>Limpiar</Button>
+                                        
                 </ScrollView>
             </View>
         </ View>
@@ -297,14 +297,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     contentContainer: {
-        padding: 10,
+        paddingRight: 10,
+        paddingLeft: 10,
     },
     customInput: {
         marginBottom: 10
-    },
-    picker: {
-        // height: 50,
-        // width: '100%',
     },
     dateInputReadOnly: {
         width: '75%'

@@ -3,7 +3,6 @@
     "name": "SCPP",
     "slug": "SCPP-reactNative",
     "privacy": "public",
-    "sdkVersion": "36.0.0",
     "platforms": [
       "ios",
       "android",

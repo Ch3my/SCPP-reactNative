@@ -20,6 +20,7 @@ export default function ReportsScreen({ navigation }) {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [rowRefs, setRowRefs] = React.useState([]);
+  const [searchPhrase, setSearchPhrase] = React.useState('')  
 
   // Set moment locale
   moment.locale('es')
@@ -107,7 +108,8 @@ export default function ReportsScreen({ navigation }) {
         fk_categoria: categoryReq,
         fechaInicio,
         fechaTermino,
-        sessionHash
+        sessionHash,
+        searchPhrase
       }
     }).catch((err) => { console.log(err) })
     setIsLoading(false)
@@ -231,7 +233,7 @@ export default function ReportsScreen({ navigation }) {
 
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps='handled'>
       <View style={styles.contentContainer}>
         <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
           <Text style={styles.label}>Tipo Doc </Text>
@@ -256,7 +258,9 @@ export default function ReportsScreen({ navigation }) {
             </Picker>
           </View>
         </View>
-
+        {/* Texto de Busqueda */}
+        <TextInput mode="outlined" dense='true' label='Buscar' value={searchPhrase}
+            style={styles.customInput } onChangeText={text => setSearchPhrase(text)}/>
 
         {/* DatePickers */}
         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
@@ -292,7 +296,7 @@ export default function ReportsScreen({ navigation }) {
         ) : (
             <DataTable>
               <DataTable.Header style={styles.tableHeader}>
-                <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
+                <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
                   <Text style={styles.tableHeaderText}>Fecha</Text>
                 </DataTable.Title>
                 <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
@@ -307,7 +311,7 @@ export default function ReportsScreen({ navigation }) {
                 <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
                   overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
                   <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
-                    <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
+                    <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM YY')}</DataTable.Cell>
                     <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
                     <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
                   </DataTable.Row>

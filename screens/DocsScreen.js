@@ -1,5 +1,8 @@
 import * as React from 'react';
+// Usamos Picker aunque este deprecated por compatibilidad
 import { StyleSheet, Text, View, Picker, ListView, Animated, AsyncStorage } from 'react-native';
+// Parece que aun hay problemas usando la version nueva de Picker Linking
+// import {Picker} from '@react-native-community/picker';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
@@ -138,6 +141,9 @@ export default function DocsScreen({ navigation }) {
       // Declaramos como true para que los siguientes eventos se consideren updated y no mounted
       // es un flag de control
       didMountRef.current = true
+      // Reseteamos el tipoDoc para 
+      // que Picker tome el valor correcto
+      setTipoDoc(1)
     });
     return unsubscribe;
   }, [navigation]);
