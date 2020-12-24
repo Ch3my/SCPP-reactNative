@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Picker, Platform, AsyncStorage, Animated } from 'react-native';
+import { StyleSheet, Text, View, Picker, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -20,7 +21,9 @@ export default function ReportsScreen({ navigation }) {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [rowRefs, setRowRefs] = React.useState([]);
-  const [searchPhrase, setSearchPhrase] = React.useState('')  
+  const [searchPhrase, setSearchPhrase] = React.useState('')
+  // Variable que contiene la suma de todas las filas mostradas
+  const sumaTotal = React.useRef(0);
 
   // Set moment locale
   moment.locale('es')
@@ -87,6 +90,9 @@ export default function ReportsScreen({ navigation }) {
   const getDataAsync = async () => {
     setIsLoading(true)
 
+    // Reseteamos la variable que suma las filas mostradas en la tabla para volver a sumar
+    sumaTotal.current = 0
+
     // Asume Fechas que el usuario ingreso o Todo el Año en Defecto 
     let fechaInicio = dateFechaInicio || moment().format('YYYY-01-01')
     let fechaTermino = dateFechaTermino || moment().format('YYYY-12-31')
@@ -112,6 +118,10 @@ export default function ReportsScreen({ navigation }) {
         searchPhrase
       }
     }).catch((err) => { console.log(err) })
+    // Recorremos el array para sumar el Total
+    for (var doc of docs.data) {
+      sumaTotal.current += doc.monto
+    }
     setIsLoading(false)
     setListOfData(docs.data)
 
@@ -178,7 +188,7 @@ export default function ReportsScreen({ navigation }) {
       if (text == 'modify') {
         // Abrir Activity de Modificar
         // Navigate to the Edit route with params 
-        navigation.navigate('EditRecord', { id });      
+        navigation.navigate('EditRecord', { id });
       } else if (text == 'delete') {
         try {
           // Obtiene la Session 
@@ -260,13 +270,13 @@ export default function ReportsScreen({ navigation }) {
         </View>
         {/* Texto de Busqueda */}
         <TextInput mode="outlined" dense='true' label='Buscar' value={searchPhrase}
-            style={styles.customInput } onChangeText={text => setSearchPhrase(text)}/>
+          style={styles.customInput} onChangeText={text => setSearchPhrase(text)} />
 
         {/* DatePickers */}
         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
           <TextInput mode="outlined" dense='true' label='Fecha Inicio' value={dateFechaInicio && moment(dateFechaInicio).format('YYYY-MM-DD')}
             style={styles.customInput, styles.dateInputReadOnly} />
-          <Button mode="contained" onPress={showDatePickerFechaInicio} style={styles.dateInputButton}> > </Button>
+          <Button mode="contained" onPress={showDatePickerFechaInicio} style={styles.dateInputButton}> &gt; </Button>
         </View>
         {showDatePickerFechaInicioFlag && (
           <DateTimePicker testID="dateTimePicker" value={dateFechaInicio || new Date()} mode="date"
@@ -276,7 +286,7 @@ export default function ReportsScreen({ navigation }) {
         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
           <TextInput mode="outlined" dense='true' label='Fecha Termino' value={dateFechaTermino && moment(dateFechaTermino).format('YYYY-MM-DD')}
             style={styles.customInput, styles.dateInputReadOnly} />
-          <Button mode="contained" onPress={showDatePickerFechaTermino} style={styles.dateInputButton}> > </Button>
+          <Button mode="contained" onPress={showDatePickerFechaTermino} style={styles.dateInputButton}> &gt; </Button>
         </View>
         {showDatePickerFechaTerminoFlag && (
           <DateTimePicker testID="dateTimePicker" value={dateFechaTermino || new Date()} mode="date"
@@ -294,32 +304,36 @@ export default function ReportsScreen({ navigation }) {
         {isLoading ? (
           <ProgressBar progress={1} indeterminate />
         ) : (
-            <DataTable>
-              <DataTable.Header style={styles.tableHeader}>
-                <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Fecha</Text>
-                </DataTable.Title>
-                <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Proposito</Text>
-                </DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Monto</Text>
-                </DataTable.Title>
-              </DataTable.Header>
+            <View>
+              <DataTable>
+                <DataTable.Header style={styles.tableHeader}>
+                  <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
+                    <Text style={styles.tableHeaderText}>Fecha</Text>
+                  </DataTable.Title>
+                  <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+                    <Text style={styles.tableHeaderText}>Proposito</Text>
+                  </DataTable.Title>
+                  <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+                    <Text style={styles.tableHeaderText}>Monto</Text>
+                  </DataTable.Title>
+                </DataTable.Header>
 
-              {listOfData.map((item, key) => (
-                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
-                  overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                  <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
-                    <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM YY')}</DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
-                  </DataTable.Row>
-                </Swipeable>
-              )
-              )}
-
-            </DataTable>
+                {listOfData.map((item, key) => (
+                  <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+                    overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
+                    <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
+                      <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM YY')}</DataTable.Cell>
+                      <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
+                      <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
+                    </DataTable.Row>
+                  </Swipeable>
+                )
+                )}
+              </DataTable>
+              <View style={styles.totalDiv}>
+                <Text>Total $ {numeral(sumaTotal.current).format('0,0')}</Text>
+              </View>
+            </View>
           )}
 
       </View>
@@ -365,5 +379,10 @@ const styles = StyleSheet.create({
   },
   tableHeaderText: {
     fontSize: 13
+  },
+  totalDiv: {
+    alignItems: 'flex-end',
+    padding: 15,
+    marginTop: 20
   }
 });

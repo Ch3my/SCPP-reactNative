@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, AsyncStorage } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner } from 'react-native-paper';
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
 import useStateWithCallback from 'use-state-with-callback';
@@ -281,7 +283,7 @@ export default function AddRecordScreen({ route }) {
                     <View style={{ flexDirection: 'row' }}>
                         <TextInput mode="outlined" dense='true' label='Fecha' value={moment(date).format('YYYY-MM-DD')}
                             style={styles.customInput, styles.dateInputReadOnly} />
-                        <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> > </Button>
+                        <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
 
                     <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>

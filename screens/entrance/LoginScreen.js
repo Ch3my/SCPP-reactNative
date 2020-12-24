@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import axios from 'axios';
-import { AsyncStorage, ScrollView, View, KeyboardAvoidingView, StyleSheet } from 'react-native'
+import { ScrollView, View, KeyboardAvoidingView, StyleSheet } from 'react-native'
 import { TextInput } from 'react-native-paper';
 import { Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import AuthContext from '../../context/AuthContext'
 

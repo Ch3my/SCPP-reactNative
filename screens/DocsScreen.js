@@ -1,11 +1,12 @@
 import * as React from 'react';
 // Usamos Picker aunque este deprecated por compatibilidad
-import { StyleSheet, Text, View, Picker, ListView, Animated, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, View, Picker, ListView, Animated } from 'react-native';
 // Parece que aun hay problemas usando la version nueva de Picker Linking
 // import {Picker} from '@react-native-community/picker';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -99,7 +100,7 @@ export default function DocsScreen({ navigation }) {
       fechaTermino = moment().format('YYYY-MM') + '-31'
     } else {
       fechaInicio = moment().format('YYYY') + '-01-01'
-      fechaTermino = moment().format('YYYY') + '-12-01'
+      fechaTermino = moment().format('YYYY') + '-12-31'
     }
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, AsyncStorage, Dimensions, ActivityIndicator } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Dimensions, ActivityIndicator } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 import { ProgressBar } from 'react-native-paper'
@@ -7,6 +7,7 @@ import { ProgressBar } from 'react-native-paper'
 // Solo funciona en el Browser
 // import { Doughnut, HorizontalBar, Line, Pie } from 'react-chartjs-2';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 
 import axios from 'axios'
