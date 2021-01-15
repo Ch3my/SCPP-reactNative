@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import LogoutScreen from '../screens/entrance/LogoutScreen';
 import ConfigScreen from '../screens/ConfigScreen';
@@ -11,7 +12,9 @@ export default function ConfigNavigator({ navigation, route }) {
     // Set the header title on the parent stack navigator depending on the
     // currently active tab. Learn more in the documentation:
     // https://reactnavigation.org/docs/en/screen-options-resolution.html
-    navigation.setOptions({ headerTitle: getHeaderTitle(route) });
+    React.useEffect(()=> {
+        navigation.setOptions({ headerTitle: getHeaderTitle(route) });
+    }, [])
 
     return (
         <Stack.Navigator>
@@ -24,7 +27,9 @@ export default function ConfigNavigator({ navigation, route }) {
 
 
 function getHeaderTitle(route) {
-    const routeName = route.state?.routes[route.state.index]?.name ?? INITIAL_ROUTE_NAME;
+    // DEPRECATED
+    // const routeName = route.state?.routes[route.state.index]?.name ?? INITIAL_ROUTE_NAME;
+    const routeName = getFocusedRouteNameFromRoute(route) ?? INITIAL_ROUTE_NAME;
 
     switch (routeName) {
         case 'Logout':

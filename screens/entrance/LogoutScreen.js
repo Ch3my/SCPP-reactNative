@@ -3,8 +3,8 @@ import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 
-import AuthContext from '../../context/AuthContext'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthContext from '../../context/AuthContext'
 
 export default function LogoutScreen() {
 

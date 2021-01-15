@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthContext from '../context/AuthContext'
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -14,7 +15,6 @@ import numeral from 'numeral'
 import moment from 'moment'
 import 'moment/locale/es'
 import _ from 'lodash'
-import AuthContext from '../context/AuthContext'
 
 import { DataTable, IconButton, Button, ProgressBar } from 'react-native-paper';
 
@@ -26,6 +26,8 @@ export default function DocsScreen({ navigation }) {
 
   // Simplemente ejecuta funcion Logout del Context (Asi modifica el estado de la App)
   const { logout } = React.useContext(AuthContext)
+  // Se trae el prefix para acceder a la API
+  const { apiPrefix } = React.useContext(AuthContext)
 
   //     _______..___________.     ___      .___________. _______ 
   //     /       ||           |    /   \     |           ||   ____|
@@ -63,7 +65,7 @@ export default function DocsScreen({ navigation }) {
     const getTipoDocAsync = async () => {
       // Obtiene la Session 
       var sessionHash = await AsyncStorage.getItem('session');
-      let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc', {
+      let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
         params: {
           sessionHash
         }
@@ -104,7 +106,7 @@ export default function DocsScreen({ navigation }) {
     }
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
-    let docs = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-docs', {
+    let docs = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-docs', {
       params: {
         fk_tipoDoc: tipoDoc,
         fechaInicio,
@@ -185,7 +187,7 @@ export default function DocsScreen({ navigation }) {
           // Obtiene la Session 
           var sessionHash = await AsyncStorage.getItem('session');
           // Enviar al Servidor la eliminacion de este Registro y recargar la tabla
-          await axios.delete('https://scpp.herokuapp.com/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
+          await axios.delete(apiPrefix + '/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
           getDataAsync();
         } catch (e) {
           console.log("Error al eliminar Documento")

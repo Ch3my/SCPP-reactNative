@@ -5,6 +5,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner } from 'react-native-paper';
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthContext from '../context/AuthContext'
 
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -19,6 +20,8 @@ export default function AddRecordScreen({ route }) {
 
     const { id } = route.params;
 
+    // Se trae el prefix para acceder a la API
+    const { apiPrefix } = React.useContext(AuthContext)
 
     // _______   ______   .______      .___  ___.     _______       ___      .___________.     ___      
     // |   ____| /  __  \  |   _  \     |   \/   |    |       \     /   \     |           |    /   \     
@@ -79,7 +82,7 @@ export default function AddRecordScreen({ route }) {
         var sessionHash = await AsyncStorage.getItem('session');
         argins.sessionHash = sessionHash
         // TODO. Verificar que se grabo
-        axios.put('https://scpp.herokuapp.com/api/v1/api-endpoints/update-doc', argins)
+        axios.put(apiPrefix + '/api/v1/api-endpoints/update-doc', argins)
             .then(function (response) {
                 if (response.data.hasErrors) {
                     setFeedback(true)
@@ -145,7 +148,7 @@ export default function AddRecordScreen({ route }) {
     React.useEffect(() => {
         // Fetch dat from API and build Picker
         const getCategoriasAsync = async () => {
-            let categorias = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
+            let categorias = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
             setListOfCategories(categorias.data)
         };
         getCategoriasAsync();
@@ -169,7 +172,7 @@ export default function AddRecordScreen({ route }) {
         const getTipoDocAsync = async () => {
             // Obtiene la Session 
             var sessionHash = await AsyncStorage.getItem('session');
-            let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc', {
+            let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
                 params: {
                     sessionHash
                 }
@@ -202,7 +205,7 @@ export default function AddRecordScreen({ route }) {
         const fetchCurrentRecord = async () => {
             // Obtiene la Session 
             var sessionHash = await AsyncStorage.getItem('session');
-            let doc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-doc', {
+            let doc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-doc', {
                 params: {
                     sessionHash,
                     id

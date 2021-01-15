@@ -22,6 +22,9 @@ export default function App(props) {
   const [initialNavigationState, setInitialNavigationState] = React.useState();
   const containerRef = React.useRef();
   const { getInitialState } = useLinking(containerRef);
+  // ApiPrefix que se usa dentro del AuthContext. ya que parace que context
+  // no puede referenciarse a si mismo
+  const contextApiPrefix = 'https://scpp.lezora.cl:4343'
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
@@ -127,12 +130,13 @@ export default function App(props) {
 
   const authContextState = {
     isLoggedIn: false,
+    apiPrefix: 'https://scpp.lezora.cl:4343',
     login: data => {
       var argins = {
         username: data.username.username,
         password: data.password.password,
       }
-      axios.post('https://scpp.herokuapp.com/api/v1/api-endpoints/entrance/login', argins
+      axios.post(contextApiPrefix + '/api/v1/api-endpoints/entrance/login', argins
       ).then(response => {
         if (response.status != 200) {
           console.log("El usuario no esta autorizado")
@@ -148,11 +152,13 @@ export default function App(props) {
       })
     },
     logout: sessionHash => {
-      axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/entrance/logout', {
+      console.log(contextApiPrefix + '/api/v1/api-endpoints/entrance/logout')
+      axios.get(contextApiPrefix + '/api/v1/api-endpoints/entrance/logout', {
         params: {
           sessionHash: sessionHash
         }
       }).then(response => {
+        console.log(response)
         // TODO. Crear en el servidor y cliente metodo para que verifique que el logout fue exitoso
         // Limpia las variables del AsyncStorage y modifica el Estado de la App
         AsyncStorage.removeItem('session')

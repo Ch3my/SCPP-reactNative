@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthContext from '../context/AuthContext'
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -24,6 +25,8 @@ export default function ReportsScreen({ navigation }) {
   const [searchPhrase, setSearchPhrase] = React.useState('')
   // Variable que contiene la suma de todas las filas mostradas
   const sumaTotal = React.useRef(0);
+  // Se trae el prefix para acceder a la API
+  const { apiPrefix } = React.useContext(AuthContext)
 
   // Set moment locale
   moment.locale('es')
@@ -45,7 +48,7 @@ export default function ReportsScreen({ navigation }) {
     const getTipoDocAsync = async () => {
       // Obtiene la Session 
       var sessionHash = await AsyncStorage.getItem('session');
-      let tipoDoc = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-tipo-doc',
+      let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc',
         {
           params: {
             sessionHash
@@ -71,7 +74,7 @@ export default function ReportsScreen({ navigation }) {
   React.useEffect(() => {
     // Fetch dat from API and build Picker
     const getCategoriasAsync = async () => {
-      let categorias = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
+      let categorias = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
       setListOfCategories(categorias.data)
     };
     getCategoriasAsync();
@@ -108,7 +111,7 @@ export default function ReportsScreen({ navigation }) {
 
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
-    let docs = await axios.get('https://scpp.herokuapp.com/api/v1/api-endpoints/get-docs', {
+    let docs = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-docs', {
       params: {
         fk_tipoDoc: tipoDoc,
         fk_categoria: categoryReq,
@@ -194,7 +197,7 @@ export default function ReportsScreen({ navigation }) {
           // Obtiene la Session 
           var sessionHash = await AsyncStorage.getItem('session');
           // Enviar al Servidor la eliminacion de este Registro y recargar la tabla
-          await axios.delete('https://scpp.herokuapp.com/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
+          await axios.delete(apiPrefix + '/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
           getDataAsync();
         } catch (e) {
           console.log("Error al eliminar Documento")
