@@ -348,7 +348,7 @@ export default function ReportsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
+    // backgroundColor: '#fafafa',
   },
   contentContainer: {
     padding: 10,

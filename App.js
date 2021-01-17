@@ -5,7 +5,7 @@ import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import AuthContext from './context/AuthContext'
@@ -15,16 +15,52 @@ import BottomTabNavigator from './navigation/BottomTabNavigator';
 import LoginScreen from './screens/entrance/LoginScreen'
 import useLinking from './navigation/useLinking';
 
+// Tema oscuro
+// Saber si el SO tiene activado light/dark theme
+// Para que funcione tenemos que setear el tema de native-paper
+// y react navigation
+import { Appearance } from 'react-native';
+import { DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultTheme, } from '@react-navigation/native'
+import { DarkTheme as PaperDarkTheme, DefaultTheme as PaperDefaultTheme } from 'react-native-paper'
+const CombinedDefaultTheme = {
+  ...PaperDefaultTheme,
+  ...NavigationDefaultTheme,
+  colors: {
+    ...PaperDefaultTheme.colors,
+    ...NavigationDefaultTheme.colors,
+  },
+};
+const CombinedDarkTheme = {
+  ...PaperDarkTheme,
+  ...NavigationDarkTheme,
+  colors: {
+    ...PaperDarkTheme.colors,
+    ...NavigationDarkTheme.colors,
+  },
+};
+
 const Stack = createStackNavigator();
 
 export default function App(props) {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
   const [initialNavigationState, setInitialNavigationState] = React.useState();
+  const [theme, setTheme] = React.useState(CombinedDefaultTheme);
   const containerRef = React.useRef();
   const { getInitialState } = useLinking(containerRef);
   // ApiPrefix que se usa dentro del AuthContext. ya que parace que context
   // no puede referenciarse a si mismo
-  const contextApiPrefix = 'https://scpp.lezora.cl:4343'
+  // const contextApiPrefix = 'https://scpp.lezora.cl:4343'
+  // Development
+  const contextApiPrefix = 'http://192.168.2.20:1337'
+
+  // Saber que tema esta usando el SO
+  const colorScheme = Appearance.getColorScheme();
+  // console.log(colorScheme)
+  if (colorScheme === 'dark') {
+    // Use dark color scheme
+    // En mi telefono Samsung aunque tenga activado el Dark 
+    // react native piensa que es light. Asi que tendremos Boton de Toggle
+  }
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
@@ -52,17 +88,6 @@ export default function App(props) {
     loadResourcesAndDataAsync();
   }, []);
 
-
-  // Tema de React Paper
-  const theme = {
-    ...DefaultTheme,
-    roundness: 2,
-    colors: {
-      ...DefaultTheme.colors,
-      primary: '#007bff',
-      accent: '#f1c40f',
-    },
-  };
 
   // __        ______     _______  __  .__   __.      ______   .______         .______       _______  _______   __  .______       _______   ______ .___________.
   // |  |      /  __  \   /  _____||  | |  \ |  |     /  __  \  |   _  \        |   _  \     |   ____||       \ |  | |   _  \     |   ____| /      ||           |
@@ -97,12 +122,18 @@ export default function App(props) {
             ...prevState,
             stackHeader: action.control,
           };
+        case 'UPDATE_THEME':
+          return {
+            ...prevState,
+            themeName: action.theme,
+          }
       }
     },
     {
       isSignout: false,
       userToken: null,
       stackHeader: true,
+      themeName: 'default'
     }
   );
   // Obtenemos Datos de LocalStorage. Esta dentro de esta funcion para poder ejecutarlo de manera sincrona
@@ -110,9 +141,11 @@ export default function App(props) {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       let session;
+      let themeScoped;
 
       try {
         session = await AsyncStorage.getItem('session');
+        themeScoped = await AsyncStorage.getItem('theme');
       } catch (e) {
         // Restoring token failed
       }
@@ -122,15 +155,48 @@ export default function App(props) {
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
       dispatch({ type: 'RESTORE_TOKEN', token: session });
+
+      // Guardamos en el contexto que tema estamos usando
+      // de acuerdo a lo que tenemos en el AsyncStorage
+      if (themeScoped == null) {
+        // deja el tema por defecto
+        // No cambia el objeto theme porque ya esta por defecto
+        // Ademas si es nulo lo crea
+        AsyncStorage.setItem('theme', 'default')
+        dispatch({ type: 'UPDATE_THEME', theme: 'default' });
+        setTheme(CombinedDefaultTheme)
+      } else {
+        if (themeScoped == 'default') {
+          // theme = CombinedDefaultTheme
+          setTheme(CombinedDefaultTheme)
+          dispatch({ type: 'UPDATE_THEME', theme: 'default' });
+        } else if (themeScoped == 'dark') {
+          // theme = CombinedDarkTheme
+          setTheme(CombinedDarkTheme)
+          dispatch({ type: 'UPDATE_THEME', theme: 'dark' });
+        }
+      }
     };
 
     bootstrapAsync();
   }, []);
 
+  // Actualiza el tema onDemand
+  React.useEffect(() => {
+    if (state.themeName == 'default') {
+      // theme = CombinedDefaultTheme
+      setTheme(CombinedDefaultTheme)
+    } else if (state.themeName == 'dark') {
+      // theme = CombinedDarkTheme
+      setTheme(CombinedDarkTheme)
+    }
+  }, [state.themeName]);
 
   const authContextState = {
     isLoggedIn: false,
-    apiPrefix: 'https://scpp.lezora.cl:4343',
+    // apiPrefix: 'https://scpp.lezora.cl:4343',
+    // Development
+    apiPrefix: 'http://192.168.2.20:1337',
     login: data => {
       var argins = {
         username: data.username.username,
@@ -152,7 +218,6 @@ export default function App(props) {
       })
     },
     logout: sessionHash => {
-      console.log(contextApiPrefix + '/api/v1/api-endpoints/entrance/logout')
       axios.get(contextApiPrefix + '/api/v1/api-endpoints/entrance/logout', {
         params: {
           sessionHash: sessionHash
@@ -173,8 +238,26 @@ export default function App(props) {
       dispatch({ type: 'STACK_HEADER_CONTROL', control: flag });
     },
     getStackHeaderControl: () => {
-      return state.stackHeader      
-    }
+      return state.stackHeader
+    },
+    updateTheme: theme => {
+      if (theme) {
+        // Seteamos directamente lo que nos dijeron
+        // en caso de que tengamos mas de 2 temas
+        AsyncStorage.setItem('theme', theme)
+        dispatch({ type: 'UPDATE_THEME', theme: theme });
+        return
+      }
+      if (state.themeName == 'default') {
+        AsyncStorage.setItem('theme', 'dark')
+        dispatch({ type: 'UPDATE_THEME', theme: 'dark' });
+      } else if (state.themeName == 'dark') {
+        AsyncStorage.setItem('theme', 'default')
+        dispatch({ type: 'UPDATE_THEME', theme: 'default' });
+      }
+    },
+    getTheme: () => state.themeName
+    
   }
 
   if (!isLoadingComplete && !props.skipLoadingScreen) {
@@ -205,7 +288,7 @@ export default function App(props) {
         <PaperProvider theme={theme}>
           <View style={styles.container}>
             {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-            <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
+            <NavigationContainer ref={containerRef} initialState={initialNavigationState} theme={theme}>
               {state.userToken ? (
                 <BottomTabNavigator />
               ) : (

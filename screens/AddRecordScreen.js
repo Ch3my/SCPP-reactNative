@@ -2,13 +2,14 @@ import * as React from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, KeyboardAvoidingView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
-import { TextInput, Button, Banner, Checkbox } from 'react-native-paper';
+import { TextInput, Button, Banner, Checkbox, Text as PaperText } from 'react-native-paper';
 import axios from 'axios'
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
 import useStateWithCallback from 'use-state-with-callback';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
+import TipoDocPicker from '../components/TipoDocPicker'
 
 import { TextInputMask } from 'react-native-masked-text'
 
@@ -57,7 +58,7 @@ export default function AddRecordScreen() {
         // por ahora solo lo manejamos asi
         var calculatedMonto = monto.replace(/\,/g, "").replace(/\$/g, "").trim()
         // Si esta marcado el Flag de Numero Negativo, lo ponemos negativo
-        if(isNegativeAmount) {
+        if (isNegativeAmount) {
             calculatedMonto = calculatedMonto * -1
         }
 
@@ -162,6 +163,7 @@ export default function AddRecordScreen() {
     // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
 
     const [tipoDoc, setTipoDoc] = React.useState(1);
+    const [tipoDocName, setTipoDocName] = React.useState('Gasto');
     const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
 
     React.useEffect(() => {
@@ -180,21 +182,34 @@ export default function AddRecordScreen() {
     }, []);
 
     // Maneja el Evento cuando Cambian el Select si no es categoria Gasto deja como Null la categoria
-    const onChangeTipoDoc = (itemValue) => {
-        setTipoDoc(itemValue)
-        if (itemValue != 1) {
-            setCategory(null)
-        } else {
-            // Reset la Categoria a valor por Defecto
-            setCategory(2)
+    // const onChangeTipoDoc = (itemValue) => {
+    //     setTipoDoc(itemValue)
+    //     if (itemValue != 1) {
+    //         setCategory(null)
+    //     } else {
+    //         // Reset la Categoria a valor por Defecto
+    //         setCategory(2)
+    //     }
+    // }
+    const onUpdateTipoDoc = tipoDoc => {
+        setTipoDoc(tipoDoc)
+        switch (tipoDoc) {
+          case 1:
+            setTipoDocName('Gasto')
+            break
+          case 2:
+            setTipoDocName('Ahorro')
+            break
+          case 3:
+            setTipoDocName('Ingreso')
+            break
         }
-    }
-
+      }
     // Funcion que marca el flag de numero negativo. Ya que no podemos enmascarar un numero negativo al parecer
     // lo que provoca que no podamos grabar un numero negativo
     const setNegativeAmount = () => {
         setIsNegativeAmount(!isNegativeAmount)
-        if(!isNegativeAmount) {
+        if (!isNegativeAmount) {
             // Amarillo
             setDynamicButtomColor('#f1c40f')
         } else {
@@ -255,7 +270,7 @@ export default function AddRecordScreen() {
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
 
-                    <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
+                    {/* <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
                         <Text style={{ marginTop: 30 }}>Tipo Doc </Text>
                         <View style={{ width: 300, height: 40, marginTop: 15 }}>
                             <Picker selectedValue={tipoDoc} style={styles.customInput}
@@ -265,6 +280,10 @@ export default function AddRecordScreen() {
                                 )}
                             </Picker>
                         </View>
+                    </View> */}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+                        <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+                        <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
                     </View>
 
                     {category && (
@@ -282,8 +301,8 @@ export default function AddRecordScreen() {
                     )}
 
                     <Button mode="contained" onPress={saveNewRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
-                    <Button mode="outlined" style={{marginTop:10}} onPress={clearForm}>Limpiar</Button>
-                                        
+                    <Button mode="outlined" style={{ marginTop: 10 }} onPress={clearForm}>Limpiar</Button>
+
                 </ScrollView>
             </View>
         </ View>
@@ -300,7 +319,7 @@ export default function AddRecordScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        // backgroundColor: '#fff',
     },
     contentContainer: {
         paddingRight: 10,

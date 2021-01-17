@@ -1,13 +1,13 @@
 import * as React from 'react';
 // Usamos Picker aunque este deprecated por compatibilidad
-import { StyleSheet, Text, View, Picker, ListView, Animated } from 'react-native';
+import { StyleSheet, Text, View, Animated } from 'react-native';
 // Parece que aun hay problemas usando la version nueva de Picker Linking
 // import {Picker} from '@react-native-community/picker';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
+import TipoDocPicker from '../components/TipoDocPicker'
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -16,7 +16,7 @@ import moment from 'moment'
 import 'moment/locale/es'
 import _ from 'lodash'
 
-import { DataTable, IconButton, Button, ProgressBar } from 'react-native-paper';
+import { DataTable, IconButton, Button, ProgressBar, Text as PaperText } from 'react-native-paper';
 
 // https://software-mansion.github.io/react-native-gesture-handler/docs/component-swipeable.html
 // https://github.com/software-mansion/react-native-gesture-handler/blob/master/Example/swipeable/AppleStyleSwipeableRow.js
@@ -25,9 +25,8 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 export default function DocsScreen({ navigation }) {
 
   // Simplemente ejecuta funcion Logout del Context (Asi modifica el estado de la App)
-  const { logout } = React.useContext(AuthContext)
   // Se trae el prefix para acceder a la API
-  const { apiPrefix } = React.useContext(AuthContext)
+  const { logout, apiPrefix, getTheme } = React.useContext(AuthContext)
 
   //     _______..___________.     ___      .___________. _______ 
   //     /       ||           |    /   \     |           ||   ____|
@@ -40,13 +39,11 @@ export default function DocsScreen({ navigation }) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [listOfData, setListOfData] = React.useState([]);
   const [tipoDoc, setTipoDoc] = React.useState(1);
-  const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
+  const [tipoDocName, setTipoDocName] = React.useState('Gasto');
+
   // Variable que contiene la suma de todas las filas mostradas
   const sumaTotal = React.useRef(0);
   const [rowRefs, setRowRefs] = React.useState([]);
-  // Ref es como State solo que no se recarga cada vez que el componente lo hace
-  // Lo usamos para diferenciar entre primera renderizacion y eventos updated
-  const didMountRef = React.useRef(false)
 
   // Set moment locale
   moment.locale('es')
@@ -58,28 +55,20 @@ export default function DocsScreen({ navigation }) {
   //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
   //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-  // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
-
-  React.useEffect(() => {
-    // Fetch dat from API and build Picker
-    const getTipoDocAsync = async () => {
-      // Obtiene la Session 
-      var sessionHash = await AsyncStorage.getItem('session');
-      let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
-        params: {
-          sessionHash
-        }
-      }).catch((err) => { console.log(err) })
-      // Probablemente este Error es que el Token no es valido
-      // Cerramos la Sesion
-      if (tipoDoc.data.hasErrors) {
-        logout(sessionHash)
-      } else {
-        setListOfTipoDoc(tipoDoc.data)
-      }
-    };
-    getTipoDocAsync();
-  }, []);
+  const onUpdateTipoDoc = tipoDoc => {
+    setTipoDoc(tipoDoc)
+    switch (tipoDoc) {
+      case 1:
+        setTipoDocName('Gasto')
+        break
+      case 2:
+        setTipoDocName('Ahorro')
+        break
+      case 3:
+        setTipoDocName('Ingreso')
+        break
+    }
+  }
 
   // .___________.     ___      .______    __       _______  _______       ___      .___________.     ___      
   // |           |    /   \     |   _  \  |  |     |   ____||       \     /   \     |           |    /   \     
@@ -120,7 +109,7 @@ export default function DocsScreen({ navigation }) {
       logout(sessionHash)
     } else {
       // Recorremos el array para sumar el Total
-      for(var doc of docs.data) {
+      for (var doc of docs.data) {
         sumaTotal.current += doc.monto
       }
       setIsLoading(false)
@@ -141,12 +130,9 @@ export default function DocsScreen({ navigation }) {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       getDataAsync();
-      // Declaramos como true para que los siguientes eventos se consideren updated y no mounted
-      // es un flag de control
-      didMountRef.current = true
       // Reseteamos el tipoDoc para 
       // que Picker tome el valor correcto
-      setTipoDoc(1)
+      onUpdateTipoDoc(1)
     });
     return unsubscribe;
   }, [navigation]);
@@ -157,9 +143,7 @@ export default function DocsScreen({ navigation }) {
   // si no se especifica o es [] (vacio) el hook solo se ejecuta on loaded sin mirar variables
   React.useEffect(() => {
     // Fetch dat from API to build Table
-    if (didMountRef.current == true) {
-      getDataAsync();
-    }
+    getDataAsync();
   }, [tipoDoc]);
 
   // .______     ______   .___________.  ______   .__   __.  _______      _______.
@@ -250,23 +234,16 @@ export default function DocsScreen({ navigation }) {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.contentContainer}>
-        <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-          <Text style={styles.label}>Tipo Doc</Text>
-          <View style={{ width: 300, height: 40 }}>
-            <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
-              onValueChange={(itemValue, itemIndex) => setTipoDoc(itemValue)}>
-              {listOfTipoDoc.map((item, key) => (
-                <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-              )}
-            </Picker>
-          </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+          <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+            <PaperText style={{marginLeft: 10, fontSize:16}}>{tipoDocName}</PaperText>
         </View>
         {isLoading ? (
           <ProgressBar indeterminate />
         ) : (
             <View>
               <DataTable>
-                <DataTable.Header style={styles.tableHeader}>
+                <DataTable.Header style={styles.tableHeader, headerBg()}>
                   <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
                     <Text style={styles.tableHeaderText}>Fecha</Text>
                   </DataTable.Title>
@@ -281,7 +258,7 @@ export default function DocsScreen({ navigation }) {
                 {listOfData.map((item, key) => (
                   <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
                     overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                    <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
+                    <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
                       <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
                       <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
                       <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
@@ -297,22 +274,45 @@ export default function DocsScreen({ navigation }) {
           /> */}
               </DataTable>
               <View style={styles.totalDiv}>
-                <Text>Total $ {numeral(sumaTotal.current).format('0,0')}</Text>
+                <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
               </View>
             </View>
           )}
 
       </View>
-
     </ScrollView>
   );
 }
 
+// No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
+const oddRowsProcessewdStyle = theme => {
+  var backgroundColor = ''
+    // Controla el color dependiendo del tema en el que estamos
+  if(theme == 'default'){
+    backgroundColor = '#def5ff'
+  } else {
+    backgroundColor = '#222'
+  }
+  return {
+    backgroundColor
+  }
+}
+// Lo mismo que las filas Odd pero para el color del header
+const headerBg = theme => {
+  var backgroundColor = ''
+  if(theme == 'default'){
+    backgroundColor = '#def5ff'
+  } else {
+    backgroundColor = '#2f2f2f'
+  }
+  return {
+    backgroundColor
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
   },
   contentContainer: {
     padding: 10,
@@ -321,18 +321,14 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   label: {
-    marginTop: 15
+    marginTop: 15,
   },
   rightAction: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
   },
-  oddRows: {
-    backgroundColor: '#def5ff'
-  },
   tableHeader: {
-    backgroundColor: '#4aaacf',
     height: 36
   },
   tableHeaderText: {
