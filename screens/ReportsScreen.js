@@ -5,6 +5,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
+import TipoDocPicker from '../components/TipoDocPicker'
+import CategoriaPicker from '../components/CategoriaPicker'
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -12,7 +14,7 @@ import numeral from 'numeral'
 import moment from 'moment'
 import 'moment/locale/es'
 
-import { DataTable, IconButton, Button, ProgressBar, TextInput } from 'react-native-paper';
+import { DataTable, IconButton, Button, ProgressBar, TextInput, Text as PaperText } from 'react-native-paper';
 import useStateWithCallback from 'use-state-with-callback';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -26,7 +28,7 @@ export default function ReportsScreen({ navigation }) {
   // Variable que contiene la suma de todas las filas mostradas
   const sumaTotal = React.useRef(0);
   // Se trae el prefix para acceder a la API
-  const { apiPrefix } = React.useContext(AuthContext)
+  const { apiPrefix, getTheme } = React.useContext(AuthContext)
 
   // Set moment locale
   moment.locale('es')
@@ -38,26 +40,13 @@ export default function ReportsScreen({ navigation }) {
   //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
   //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-  // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
+  const [tipoDoc, setTipoDoc] = React.useState(-1);
+  const [tipoDocName, setTipoDocName] = React.useState('');
 
-  const [tipoDoc, setTipoDoc] = React.useState(1);
-  const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
-
-  React.useEffect(() => {
-    // Fetch dat from API and build Picker
-    const getTipoDocAsync = async () => {
-      // Obtiene la Session 
-      var sessionHash = await AsyncStorage.getItem('session');
-      let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc',
-        {
-          params: {
-            sessionHash
-          }
-        }).catch((err) => { console.log(err) })
-      setListOfTipoDoc(tipoDoc.data)
-    };
-    getTipoDocAsync();
-  }, []);
+  const onUpdateTipoDoc = ({ id, descripcion }) => {
+      setTipoDoc(id)
+      setTipoDocName(descripcion)
+  }
 
   // .______    __    ______  __  ___  _______ .______           ______      ___      .___________. _______   _______   ______   .______       __       ___      
   // |   _  \  |  |  /      ||  |/  / |   ____||   _  \         /      |    /   \     |           ||   ____| /  _____| /  __  \  |   _  \     |  |     /   \     
@@ -66,19 +55,13 @@ export default function ReportsScreen({ navigation }) {
   // |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.   |  `----. /  _____  \      |  |     |  |____ |  |__| | |  `--'  | |  |\  \----.|  |  /  _____  \  
   // | _|      |__|  \______||__|\__\ |_______|| _| `._____|    \______|/__/     \__\     |__|     |_______| \______|  \______/  | _| `._____||__| /__/     \__\ 
 
-  // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
-
   const [category, setCategory] = React.useState(-1);
-  const [listOfCategories, setListOfCategories] = React.useState([]);
+  const [categoriaName, setCategoriaName] = React.useState('');
 
-  React.useEffect(() => {
-    // Fetch dat from API and build Picker
-    const getCategoriasAsync = async () => {
-      let categorias = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
-      setListOfCategories(categorias.data)
-    };
-    getCategoriasAsync();
-  }, []);
+  const onUpdateCategoria = ({ id, descripcion }) => {
+      setCategory(id)
+      setCategoriaName(descripcion)
+  }
 
   // .___________.     ___      .______    __       _______  _______       ___      .___________.     ___      
   // |           |    /   \     |   _  \  |  |     |   ____||       \     /   \     |           |    /   \     
@@ -248,28 +231,13 @@ export default function ReportsScreen({ navigation }) {
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps='handled'>
       <View style={styles.contentContainer}>
-        <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-          <Text style={styles.label}>Tipo Doc </Text>
-          <View style={{ width: 300, height: 40 }}>
-            <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
-              onValueChange={(itemValue, itemIndex) => setTipoDoc(itemValue)}>
-              {listOfTipoDoc.map((item, key) => (
-                <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-              )}
-            </Picker>
-          </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+          <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+          <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
         </View>
-        <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-          <Text style={styles.label}>Categoria</Text>
-          <View style={{ width: 300, height: 40 }}>
-            <Picker selectedValue={category} style={styles.picker, styles.customInput}
-              onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}>
-              <Picker.Item label={'Todos'} value={-1} />
-              {listOfCategories.map((item, key) => (
-                <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-              )}
-            </Picker>
-          </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+          <CategoriaPicker onUpdateCategoria={onUpdateCategoria} />
+          <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{categoriaName}</PaperText>
         </View>
         {/* Texto de Busqueda */}
         <TextInput mode="outlined" dense='true' label='Buscar' value={searchPhrase}
@@ -309,7 +277,7 @@ export default function ReportsScreen({ navigation }) {
         ) : (
             <View>
               <DataTable>
-                <DataTable.Header style={styles.tableHeader}>
+                <DataTable.Header style={styles.tableHeader, headerBg()}>
                   <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
                     <Text style={styles.tableHeaderText}>Fecha</Text>
                   </DataTable.Title>
@@ -324,7 +292,7 @@ export default function ReportsScreen({ navigation }) {
                 {listOfData.map((item, key) => (
                   <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
                     overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                    <DataTable.Row style={key % 2 == 0 && styles.oddRows}>
+                    <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
                       <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM YY')}</DataTable.Cell>
                       <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
                       <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
@@ -334,7 +302,7 @@ export default function ReportsScreen({ navigation }) {
                 )}
               </DataTable>
               <View style={styles.totalDiv}>
-                <Text>Total $ {numeral(sumaTotal.current).format('0,0')}</Text>
+                <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
               </View>
             </View>
           )}
@@ -344,16 +312,38 @@ export default function ReportsScreen({ navigation }) {
   );
 }
 
+// No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
+const oddRowsProcessewdStyle = theme => {
+  var backgroundColor = ''
+    // Controla el color dependiendo del tema en el que estamos
+  if(theme == 'default'){
+    backgroundColor = '#def5ff'
+  } else {
+    backgroundColor = '#222'
+  }
+  return {
+    backgroundColor
+  }
+}
+// Lo mismo que las filas Odd pero para el color del header
+const headerBg = theme => {
+  var backgroundColor = ''
+  if(theme == 'default'){
+    backgroundColor = '#def5ff'
+  } else {
+    backgroundColor = '#2f2f2f'
+  }
+  return {
+    backgroundColor
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#fafafa',
   },
   contentContainer: {
     padding: 10,
-    // justifyContent: 'center',
-    // alignItems: 'center'
   },
   label: {
     marginTop: 15

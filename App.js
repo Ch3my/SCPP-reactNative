@@ -49,9 +49,9 @@ export default function App(props) {
   const { getInitialState } = useLinking(containerRef);
   // ApiPrefix que se usa dentro del AuthContext. ya que parace que context
   // no puede referenciarse a si mismo
-  // const contextApiPrefix = 'https://scpp.lezora.cl:4343'
+  const contextApiPrefix = 'https://scpp.lezora.cl:4343'
   // Development
-  const contextApiPrefix = 'http://192.168.2.20:1337'
+  // const contextApiPrefix = 'http://192.168.2.20:1337'
 
   // Saber que tema esta usando el SO
   const colorScheme = Appearance.getColorScheme();
@@ -194,9 +194,9 @@ export default function App(props) {
 
   const authContextState = {
     isLoggedIn: false,
-    // apiPrefix: 'https://scpp.lezora.cl:4343',
+    apiPrefix: 'https://scpp.lezora.cl:4343',
     // Development
-    apiPrefix: 'http://192.168.2.20:1337',
+    // apiPrefix: 'http://192.168.2.20:1337',
     login: data => {
       var argins = {
         username: data.username.username,

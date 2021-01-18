@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker, KeyboardAvoidingView } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, KeyboardAvoidingView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
-import { TextInput, Button, Banner, Checkbox, Text as PaperText } from 'react-native-paper';
+import { TextInput, Button, Banner, Text as PaperText } from 'react-native-paper';
 import axios from 'axios'
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -10,6 +10,7 @@ import useStateWithCallback from 'use-state-with-callback';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
 import TipoDocPicker from '../components/TipoDocPicker'
+import CategoriaPicker from '../components/CategoriaPicker'
 
 import { TextInputMask } from 'react-native-masked-text'
 
@@ -138,20 +139,13 @@ export default function AddRecordScreen() {
     // |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.   |  `----. /  _____  \      |  |     |  |____ |  |__| | |  `--'  | |  |\  \----.|  |  /  _____  \  
     // | _|      |__|  \______||__|\__\ |_______|| _| `._____|    \______|/__/     \__\     |__|     |_______| \______|  \______/  | _| `._____||__| /__/     \__\ 
 
-    // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
-
     const [category, setCategory] = React.useState(2);
-    const [listOfCategories, setListOfCategories] = React.useState([]);
+    const [categoriaName, setCategoriaName] = React.useState('Gasolina');
 
-    React.useEffect(() => {
-        // Fetch dat from API and build Picker
-        const getCategoriasAsync = async () => {
-            let categorias = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
-            setListOfCategories(categorias.data)
-        };
-        getCategoriasAsync();
-    }, []);
-
+    const onUpdateCategoria = ({ id, descripcion }) => {
+        setCategory(id)
+        setCategoriaName(descripcion)
+    }
 
     // .___________. __  .______     ______       _______    ______     ______ 
     // |           ||  | |   _  \   /  __  \     |       \  /  __  \   /      |
@@ -160,51 +154,23 @@ export default function AddRecordScreen() {
     //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
     //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-    // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
-
     const [tipoDoc, setTipoDoc] = React.useState(1);
     const [tipoDocName, setTipoDocName] = React.useState('Gasto');
-    const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
 
-    React.useEffect(() => {
-        // Fetch dat from API and build Picker
-        const getTipoDocAsync = async () => {
-            // Obtiene la Session 
-            var sessionHash = await AsyncStorage.getItem('session');
-            let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
-                params: {
-                    sessionHash
-                }
-            }).catch((err) => { console.log(err) })
-            setListOfTipoDoc(tipoDoc.data)
-        };
-        getTipoDocAsync();
-    }, []);
-
-    // Maneja el Evento cuando Cambian el Select si no es categoria Gasto deja como Null la categoria
-    // const onChangeTipoDoc = (itemValue) => {
-    //     setTipoDoc(itemValue)
-    //     if (itemValue != 1) {
-    //         setCategory(null)
-    //     } else {
-    //         // Reset la Categoria a valor por Defecto
-    //         setCategory(2)
-    //     }
-    // }
-    const onUpdateTipoDoc = tipoDoc => {
-        setTipoDoc(tipoDoc)
-        switch (tipoDoc) {
-          case 1:
-            setTipoDocName('Gasto')
-            break
-          case 2:
-            setTipoDocName('Ahorro')
-            break
-          case 3:
-            setTipoDocName('Ingreso')
-            break
+    const onUpdateTipoDoc = ({ id, descripcion }) => {
+        setTipoDoc(id)
+        setTipoDocName(descripcion)
+        // Si no es gasto no existe categoria
+        if (id != 1) {
+            setCategory(null)
+        } else {
+            // Si es gasto setea la categoria
+            // a valores por defecto
+            setCategory(2)
+            setCategoriaName('Gasolina')
         }
-      }
+    }
+
     // Funcion que marca el flag de numero negativo. Ya que no podemos enmascarar un numero negativo al parecer
     // lo que provoca que no podamos grabar un numero negativo
     const setNegativeAmount = () => {
@@ -220,7 +186,7 @@ export default function AddRecordScreen() {
 
     return (
         <View style={styles.container} behavior="padding">
-            <Banner visible={feedback} style={{ backgroundColor: '#def5ff' }}
+            <Banner visible={feedback}
                 actions={[{
                     label: 'Okay',
                     onPress: () => setFeedback(false),
@@ -237,9 +203,8 @@ export default function AddRecordScreen() {
             <View>
                 {/* keyboardShouldPersistTaps='handled' para poder hacer click aun cuando este el teclado activo */}
                 <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps='handled'>
-
-                    <View style={{ flexDirection: 'row' }}>
-                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput, styles.dateInputReadOnly}
+                    <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.dateInputReadOnly}
                             onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}
                             render={props =>
                                 <TextInputMask
@@ -264,39 +229,20 @@ export default function AddRecordScreen() {
                             display="default" onChange={onChangeDateTime}
                         />
                     )}
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <TextInput mode="outlined" dense='true' label='Fecha' value={moment(date).format('YYYY-MM-DD')}
-                            style={styles.customInput, styles.dateInputReadOnly} />
+                            style={styles.dateInputReadOnly} />
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
-
-                    {/* <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-                        <Text style={{ marginTop: 30 }}>Tipo Doc </Text>
-                        <View style={{ width: 300, height: 40, marginTop: 15 }}>
-                            <Picker selectedValue={tipoDoc} style={styles.customInput}
-                                onValueChange={(itemValue, itemIndex) => onChangeTipoDoc(itemValue)}>
-                                {listOfTipoDoc.map((item, key) => (
-                                    <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-                                )}
-                            </Picker>
-                        </View>
-                    </View> */}
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
                         <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
                         <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
                     </View>
-
+                    {/* Si no es gasto no muestra la categoria */}
                     {category && (
-                        <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5 }}>
-                            <Text style={styles.label}>Categoria</Text>
-                            <View style={{ width: 300, height: 40 }}>
-                                <Picker selectedValue={category} style={styles.picker, styles.customInput}
-                                    onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}>
-                                    {listOfCategories.map((item, key) => (
-                                        <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-                                    )}
-                                </Picker>
-                            </View>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+                            <CategoriaPicker onUpdateCategoria={onUpdateCategoria} />
+                            <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{categoriaName}</PaperText>
                         </View>
                     )}
 
@@ -310,20 +256,12 @@ export default function AddRecordScreen() {
     );
 }
 
-// AddRecordScreen.navigationOptions = {
-//   header: null,
-// };
-
-// NOTAS. Al picker no pude hacerlo outlined asi que simule algo parecido usando un View
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // backgroundColor: '#fff',
     },
     contentContainer: {
-        paddingRight: 10,
-        paddingLeft: 10,
+        padding: 10,
     },
     customInput: {
         marginBottom: 10

@@ -55,19 +55,9 @@ export default function DocsScreen({ navigation }) {
   //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
   //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-  const onUpdateTipoDoc = tipoDoc => {
-    setTipoDoc(tipoDoc)
-    switch (tipoDoc) {
-      case 1:
-        setTipoDocName('Gasto')
-        break
-      case 2:
-        setTipoDocName('Ahorro')
-        break
-      case 3:
-        setTipoDocName('Ingreso')
-        break
-    }
+  const onUpdateTipoDoc = ({id, descripcion}) => {
+    setTipoDoc(id)
+    setTipoDocName(descripcion)
   }
 
   // .___________.     ___      .______    __       _______  _______       ___      .___________.     ___      
@@ -132,7 +122,10 @@ export default function DocsScreen({ navigation }) {
       getDataAsync();
       // Reseteamos el tipoDoc para 
       // que Picker tome el valor correcto
-      onUpdateTipoDoc(1)
+      onUpdateTipoDoc({
+        id: 1,
+        descripcion: 'Gasto'
+      })
     });
     return unsubscribe;
   }, [navigation]);

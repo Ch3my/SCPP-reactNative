@@ -10,13 +10,13 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
 
-const TipoDocPicker = props => {
+const CategoriaPicker = props => {
     // Logic Stuff
     const { logout, apiPrefix, getTheme } = React.useContext(AuthContext)
-    const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
+    const [listOfCategoria, setListOfCategoria] = React.useState([]);
     // Emite evento al padre para actalizar
-    const emitEventUpdateTipoDoc = ({ id, descripcion }) => {
-        props.onUpdateTipoDoc({ id, descripcion });
+    const emitEventUpdateCategoria = ({ id, descripcion }) => {
+        props.onUpdateCategoria({ id, descripcion });
         setVisible(false);
     }
 
@@ -30,37 +30,36 @@ const TipoDocPicker = props => {
         const getTipoDocAsync = async () => {
             // Obtiene la Session 
             var sessionHash = await AsyncStorage.getItem('session');
-            let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
+            let categoria = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias', {
                 params: {
                     sessionHash
                 }
             }).catch((err) => { console.log(err) })
             // Probablemente este Error es que el Token no es valido
             // Cerramos la Sesion
-            if (tipoDoc.data.hasErrors) {
+            if (categoria.data.hasErrors) {
                 logout(sessionHash)
             } else {
-                setListOfTipoDoc(tipoDoc.data)
+                setListOfCategoria(categoria.data)
             }
         };
         getTipoDocAsync();
     }, []);
 
-
     return (
         <View>
-            <Button mode="outlined" onPress={showDialog}>Tipo Doc</Button>
+            <Button mode="outlined" onPress={showDialog}>Categoria</Button>
             <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog}>
-                    <Dialog.Title>Tipo Documento</Dialog.Title>
+                <Dialog visible={visible} onDismiss={hideDialog} style={{ height: '80%' }}>
+                    <Dialog.Title>Categoria</Dialog.Title>
                     <Dialog.ScrollArea>
                         <ScrollView>
                             <Dialog.Content>
-                                {listOfTipoDoc.map((item, key) => (
+                                {listOfCategoria.map((item, key) => (
                                     <List.Item
                                         title={item.descripcion}
                                         key={item.id}
-                                        onPress={() => emitEventUpdateTipoDoc({
+                                        onPress={() => emitEventUpdateCategoria({
                                             id: item.id,
                                             descripcion: item.descripcion
                                         })} />
@@ -74,4 +73,4 @@ const TipoDocPicker = props => {
     )
 }
 
-export default TipoDocPicker;
+export default CategoriaPicker;

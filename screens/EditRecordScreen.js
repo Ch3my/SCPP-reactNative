@@ -1,11 +1,13 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Picker } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
-import { TextInput, Button, Banner } from 'react-native-paper';
+import { TextInput, Button, Banner, Text as PaperText } from 'react-native-paper';
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
+import TipoDocPicker from '../components/TipoDocPicker'
+import CategoriaPicker from '../components/CategoriaPicker'
 
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -140,20 +142,13 @@ export default function AddRecordScreen({ route }) {
     // |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.   |  `----. /  _____  \      |  |     |  |____ |  |__| | |  `--'  | |  |\  \----.|  |  /  _____  \  
     // | _|      |__|  \______||__|\__\ |_______|| _| `._____|    \______|/__/     \__\     |__|     |_______| \______|  \______/  | _| `._____||__| /__/     \__\ 
 
-    // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
+    const [category, setCategory] = React.useState(-1);
+    const [categoriaName, setCategoriaName] = React.useState('');
 
-    const [category, setCategory] = React.useState(2);
-    const [listOfCategories, setListOfCategories] = React.useState([]);
-
-    React.useEffect(() => {
-        // Fetch dat from API and build Picker
-        const getCategoriasAsync = async () => {
-            let categorias = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias').catch((err) => { console.log(err) })
-            setListOfCategories(categorias.data)
-        };
-        getCategoriasAsync();
-    }, []);
-
+    const onUpdateCategoria = ({ id, descripcion }) => {
+        setCategory(id)
+        setCategoriaName(descripcion)
+    }
 
     // .___________. __  .______     ______       _______    ______     ______ 
     // |           ||  | |   _  \   /  __  \     |       \  /  __  \   /      |
@@ -162,37 +157,23 @@ export default function AddRecordScreen({ route }) {
     //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
     //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-    // Extrae datos de la API y construye options. Equivalente a ejecutar en mounted?
+    const [tipoDoc, setTipoDoc] = React.useState(-1);
+    const [tipoDocName, setTipoDocName] = React.useState('');
 
-    const [tipoDoc, setTipoDoc] = React.useState(1);
-    const [listOfTipoDoc, setListOfTipoDoc] = React.useState([]);
-
-    React.useEffect(() => {
-        // Fetch dat from API and build Picker
-        const getTipoDocAsync = async () => {
-            // Obtiene la Session 
-            var sessionHash = await AsyncStorage.getItem('session');
-            let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
-                params: {
-                    sessionHash
-                }
-            }).catch((err) => { console.log(err) })
-            setListOfTipoDoc(tipoDoc.data)
-        };
-        getTipoDocAsync();
-    }, []);
-
-    // Maneja el Evento cuando Cambian el Select si no es categoria Gasto deja como Null la categoria
-    const onChangeTipoDoc = (itemValue) => {
-        setTipoDoc(itemValue)
-        if (itemValue != 1) {
+    const onUpdateTipoDoc = ({ id, descripcion }) => {
+        setTipoDoc(id)
+        setTipoDocName(descripcion)
+        setTipoDoc(id)
+        // Si no es gasto no existe categoria
+        if (id != 1) {
             setCategory(null)
         } else {
-            // Reset la Categoria a valor por Defecto
+            // Si es gasto setea la categoria
+            // a valores por defecto
             setCategory(2)
+            setCategoriaName('Gasolina')
         }
     }
-
 
     //  _______  _______ .___________.  ______  __    __     .______       _______   ______   ______   .______       _______  
     //  |   ____||   ____||           | /      ||  |  |  |    |   _  \     |   ____| /      | /  __  \  |   _  \     |       \ 
@@ -204,20 +185,23 @@ export default function AddRecordScreen({ route }) {
     React.useEffect(() => {
         const fetchCurrentRecord = async () => {
             // Obtiene la Session 
-            var sessionHash = await AsyncStorage.getItem('session');
+            var sessionHash = await AsyncStorage.getItem('session')
             let doc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-doc', {
                 params: {
                     sessionHash,
                     id
                 }
             }).catch((err) => { console.log(err) })
+            doc = doc.data
             // Guardamos los datos en el formulario para que el usuario Edite
-            setMonto(doc.data.monto.toString())
-            setProposito(doc.data.proposito)
-            setDate(doc.data.fecha)
-            setCategory(doc.data.fk_categoria)
-            setTipoDoc(doc.data.fk_tipoDoc)
-            console.log(doc.data)
+            setMonto(doc.monto.toString())
+            setProposito(doc.proposito)
+            setDate(doc.fecha)
+            setCategory(doc.categorias_id)
+            setCategoriaName(doc.categorias_descripcion)
+            setTipoDoc(doc.tipodoc_id)
+            setTipoDocName(doc.tipodoc_descripcion)
+            setDate(doc.fecha)
         }
         fetchCurrentRecord()
     }, [])
@@ -237,7 +221,7 @@ export default function AddRecordScreen({ route }) {
 
     return (
         <View style={styles.container}>
-            <Banner visible={feedback} style={{ backgroundColor: '#def5ff' }}
+            <Banner visible={feedback} 
                 actions={[{
                     label: 'Okay',
                     onPress: () => setFeedback(false),
@@ -253,7 +237,7 @@ export default function AddRecordScreen({ route }) {
             </Banner>
             <View>
                 <ScrollView style={styles.contentContainer}>
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput, styles.dateInputReadOnly}
                             onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}
                             render={props =>
@@ -269,10 +253,7 @@ export default function AddRecordScreen({ route }) {
                                     }} />
                             } />
 
-                        {/* <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput}
-                            onChangeText={text => setMonto(text)} keyboardType={'numeric'} /> */}
                         <Button mode="contained" onPress={setNegativeAmount} style={styles.dateInputButton} color={dynamicButtomColor}> ! </Button>
-
                     </View>
 
                     <TextInput mode="outlined" dense='true' label='Propósito' value={proposito} style={styles.customInput}
@@ -283,40 +264,26 @@ export default function AddRecordScreen({ route }) {
                             display="default" onChange={onChangeDateTime}
                         />
                     )}
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <TextInput mode="outlined" dense='true' label='Fecha' value={moment(date).format('YYYY-MM-DD')}
                             style={styles.customInput, styles.dateInputReadOnly} />
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
 
-                    <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5, marginBottom: 10 }}>
-                        <Text style={{ marginTop: 30 }}>Tipo Doc </Text>
-                        <View style={{ width: 300, height: 40, marginTop: 15 }}>
-                            <Picker selectedValue={tipoDoc} style={styles.picker, styles.customInput}
-                                onValueChange={(itemValue, itemIndex) => onChangeTipoDoc(itemValue)}>
-                                {listOfTipoDoc.map((item, key) => (
-                                    <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-                                )}
-                            </Picker>
-                        </View>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+                        <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+                        <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
                     </View>
-
+                    {/* Si no es gasto no muestra la categoria */}
                     {category && (
-                        <View style={{ flexDirection: 'row', borderColor: '#BBB', borderBottomWidth: 0.5 }}>
-                            <Text style={styles.label}>Categoria</Text>
-                            <View style={{ width: 300, height: 40 }}>
-                                <Picker selectedValue={category} style={styles.picker, styles.customInput}
-                                    onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}>
-                                    {listOfCategories.map((item, key) => (
-                                        <Picker.Item label={item.descripcion} value={item.id} key={item.id} />)
-                                    )}
-                                </Picker>
-                            </View>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
+                            <CategoriaPicker onUpdateCategoria={onUpdateCategoria} />
+                            <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{categoriaName}</PaperText>
                         </View>
                     )}
 
                     <Button mode="contained" onPress={updateRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
-                    <Button mode="outlined" style={styles.customInput, styles.saveButton} onPress={clearForm}>Limpiar</Button>
+                    <Button mode="outlined" style={{ marginTop: 10 }} onPress={clearForm}>Limpiar</Button>
 
                 </ScrollView>
             </View>
@@ -325,26 +292,15 @@ export default function AddRecordScreen({ route }) {
     );
 }
 
-// AddRecordScreen.navigationOptions = {
-//   header: null,
-// };
-
-// NOTAS. Al picker no pude hacerlo outlined asi que simule algo parecido usando un View
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // backgroundColor: '#fff',
     },
     contentContainer: {
         padding: 10,
     },
     customInput: {
         marginBottom: 10
-    },
-    picker: {
-        // height: 50,
-        // width: '100%',
     },
     dateInputReadOnly: {
         width: '75%'
