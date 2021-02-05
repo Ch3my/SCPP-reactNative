@@ -78,7 +78,7 @@ export default function DocsScreen({ navigation }) {
     let fechaTermino = ''
     if (tipoDoc == 1) {
       fechaInicio = moment().format('YYYY-MM') + '-01'
-      fechaTermino = moment().format('YYYY-MM') + '-31'
+      fechaTermino = moment().format('YYYY-MM-') + moment().daysInMonth();
     } else {
       fechaInicio = moment().format('YYYY') + '-01-01'
       fechaTermino = moment().format('YYYY') + '-12-31'
