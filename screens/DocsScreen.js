@@ -38,7 +38,7 @@ export default function DocsScreen({ navigation }) {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [listOfData, setListOfData] = React.useState([]);
-  const [tipoDoc, setTipoDoc] = React.useState(1);
+  const tipoDoc = React.useRef(1);
   const [tipoDocName, setTipoDocName] = React.useState('Gasto');
 
   // Variable que contiene la suma de todas las filas mostradas
@@ -55,9 +55,10 @@ export default function DocsScreen({ navigation }) {
   //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
   //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-  const onUpdateTipoDoc = ({id, descripcion}) => {
-    setTipoDoc(id)
+  const onUpdateTipoDoc = ({ id, descripcion }) => {
+    tipoDoc.current = id
     setTipoDocName(descripcion)
+    getDataAsync();
   }
 
   // .___________.     ___      .______    __       _______  _______       ___      .___________.     ___      
@@ -76,7 +77,7 @@ export default function DocsScreen({ navigation }) {
     // Todos los del Año
     let fechaInicio = ''
     let fechaTermino = ''
-    if (tipoDoc == 1) {
+    if (tipoDoc.current == 1) {
       fechaInicio = moment().format('YYYY-MM') + '-01'
       fechaTermino = moment().format('YYYY-MM-') + moment().daysInMonth();
     } else {
@@ -87,7 +88,7 @@ export default function DocsScreen({ navigation }) {
     var sessionHash = await AsyncStorage.getItem('session');
     let docs = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-docs', {
       params: {
-        fk_tipoDoc: tipoDoc,
+        fk_tipoDoc: tipoDoc.current,
         fechaInicio,
         fechaTermino,
         sessionHash
@@ -120,24 +121,10 @@ export default function DocsScreen({ navigation }) {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       getDataAsync();
-      // Reseteamos el tipoDoc para 
-      // que Picker tome el valor correcto
-      onUpdateTipoDoc({
-        id: 1,
-        descripcion: 'Gasto'
-      })
     });
     return unsubscribe;
   }, [navigation]);
 
-
-  // Este hook siempre esta atento a la variable tipoDoc especificada como ultimo argumento
-  // cada vez que la variable cambia se ejecuta este hook especificamente.
-  // si no se especifica o es [] (vacio) el hook solo se ejecuta on loaded sin mirar variables
-  React.useEffect(() => {
-    // Fetch dat from API to build Table
-    getDataAsync();
-  }, [tipoDoc]);
 
   // .______     ______   .___________.  ______   .__   __.  _______      _______.
   // |   _  \   /  __  \  |           | /  __  \  |  \ |  | |   ____|    /       |
@@ -229,7 +216,7 @@ export default function DocsScreen({ navigation }) {
       <View style={styles.contentContainer}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
           <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
-            <PaperText style={{marginLeft: 10, fontSize:16}}>{tipoDocName}</PaperText>
+          <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
         </View>
         {isLoading ? (
           <ProgressBar indeterminate />
@@ -280,8 +267,8 @@ export default function DocsScreen({ navigation }) {
 // No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
 const oddRowsProcessewdStyle = theme => {
   var backgroundColor = ''
-    // Controla el color dependiendo del tema en el que estamos
-  if(theme == 'default'){
+  // Controla el color dependiendo del tema en el que estamos
+  if (theme == 'default') {
     backgroundColor = '#def5ff'
   } else {
     backgroundColor = '#222'
@@ -293,7 +280,7 @@ const oddRowsProcessewdStyle = theme => {
 // Lo mismo que las filas Odd pero para el color del header
 const headerBg = theme => {
   var backgroundColor = ''
-  if(theme == 'default'){
+  if (theme == 'default') {
     backgroundColor = '#def5ff'
   } else {
     backgroundColor = '#2f2f2f'
