@@ -271,13 +271,13 @@ export default function AddRecordScreen({ route }) {
                     </View>
 
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
-                        <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+                        <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} hideKeyboardOnShow={true} />
                         <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
                     </View>
                     {/* Si no es gasto no muestra la categoria */}
                     {category && (
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
-                            <CategoriaPicker onUpdateCategoria={onUpdateCategoria} />
+                            <CategoriaPicker onUpdateCategoria={onUpdateCategoria} hideKeyboardOnShow={true} />
                             <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{categoriaName}</PaperText>
                         </View>
                     )}

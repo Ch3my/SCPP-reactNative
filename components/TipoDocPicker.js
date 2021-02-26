@@ -5,7 +5,7 @@ NOTA. PaperText es un componente de texto que sigue las normas del tema aplicado
 import * as React from 'react';
 import { Button, Dialog, Portal, List } from 'react-native-paper';
 
-import { View, ScrollView } from 'react-native';
+import { View, FlatList, Keyboard } from 'react-native';
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
@@ -22,7 +22,13 @@ const TipoDocPicker = props => {
 
     // Dialog Stuff
     const [visible, setVisible] = React.useState(false);
-    const showDialog = () => setVisible(true);
+    const showDialog = () => {
+        if (props.hideKeyboardOnShow) {
+            // Si el parametro viene true. Ocultamos el Keyboard
+            Keyboard.dismiss()
+        }
+        setVisible(true)
+    }
     const hideDialog = () => setVisible(false);
 
     React.useEffect(() => {
@@ -54,9 +60,10 @@ const TipoDocPicker = props => {
                 <Dialog visible={visible} onDismiss={hideDialog}>
                     <Dialog.Title>Tipo Documento</Dialog.Title>
                     <Dialog.ScrollArea>
-                        <ScrollView>
-                            <Dialog.Content>
-                                {listOfTipoDoc.map((item, key) => (
+                        <FlatList
+                            data={listOfTipoDoc}
+                            renderItem={({ item }) => {
+                                return (
                                     <List.Item
                                         title={item.descripcion}
                                         key={item.id}
@@ -64,9 +71,9 @@ const TipoDocPicker = props => {
                                             id: item.id,
                                             descripcion: item.descripcion
                                         })} />
-                                ))}
-                            </Dialog.Content>
-                        </ScrollView>
+                                )
+                            }}
+                            keyExtractor={item => item.id} />
                     </Dialog.ScrollArea>
                 </Dialog>
             </Portal>

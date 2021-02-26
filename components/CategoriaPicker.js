@@ -5,7 +5,7 @@ NOTA. PaperText es un componente de texto que sigue las normas del tema aplicado
 import * as React from 'react';
 import { Button, Dialog, Portal, List } from 'react-native-paper';
 
-import { View, ScrollView } from 'react-native';
+import { View, FlatList, Keyboard } from 'react-native';
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
@@ -21,9 +21,15 @@ const CategoriaPicker = props => {
     }
 
     // Dialog Stuff
-    const [visible, setVisible] = React.useState(false);
-    const showDialog = () => setVisible(true);
-    const hideDialog = () => setVisible(false);
+    const [visible, setVisible] = React.useState(false)
+    const showDialog = () => {
+        if (props.hideKeyboardOnShow) {
+            // Si el parametro viene true. Ocultamos el Keyboard
+            Keyboard.dismiss()
+        }
+        setVisible(true)
+    }
+    const hideDialog = () => setVisible(false)
 
     React.useEffect(() => {
         // Fetch dat from API and build Picker
@@ -53,9 +59,10 @@ const CategoriaPicker = props => {
                 <Dialog visible={visible} onDismiss={hideDialog} style={{ height: '80%' }}>
                     <Dialog.Title>Categoria</Dialog.Title>
                     <Dialog.ScrollArea>
-                        <ScrollView>
-                            <Dialog.Content>
-                                {listOfCategoria.map((item, key) => (
+                        <FlatList
+                            data={listOfCategoria}
+                            renderItem={({ item }) => {
+                                return (
                                     <List.Item
                                         title={item.descripcion}
                                         key={item.id}
@@ -63,9 +70,8 @@ const CategoriaPicker = props => {
                                             id: item.id,
                                             descripcion: item.descripcion
                                         })} />
-                                ))}
-                            </Dialog.Content>
-                        </ScrollView>
+                                )
+                            }} />
                     </Dialog.ScrollArea>
                 </Dialog>
             </Portal>

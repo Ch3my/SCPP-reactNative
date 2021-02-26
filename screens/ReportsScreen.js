@@ -232,11 +232,11 @@ export default function ReportsScreen({ navigation }) {
     <ScrollView style={styles.container} keyboardShouldPersistTaps='handled'>
       <View style={styles.contentContainer}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
-          <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+          <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} hideKeyboardOnShow={true} />
           <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
-          <CategoriaPicker onUpdateCategoria={onUpdateCategoria} />
+          <CategoriaPicker onUpdateCategoria={onUpdateCategoria} hideKeyboardOnShow={true} />
           <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{categoriaName}</PaperText>
         </View>
         {/* Texto de Busqueda */}

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, KeyboardAvoidingView } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner, Text as PaperText } from 'react-native-paper';
@@ -235,13 +235,13 @@ export default function AddRecordScreen() {
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
-                        <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
+                        <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} hideKeyboardOnShow={true} />
                         <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
                     </View>
                     {/* Si no es gasto no muestra la categoria */}
                     {category && (
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10, alignItems: 'baseline', }}>
-                            <CategoriaPicker onUpdateCategoria={onUpdateCategoria} />
+                            <CategoriaPicker onUpdateCategoria={onUpdateCategoria} hideKeyboardOnShow={true} />
                             <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{categoriaName}</PaperText>
                         </View>
                     )}

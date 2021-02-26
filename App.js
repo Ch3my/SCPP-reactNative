@@ -207,7 +207,7 @@ export default function App(props) {
         if (response.status != 200) {
           console.log("El usuario no esta autorizado")
         } else {
-          console.log("Usuario Autorizado")
+          // console.log("Usuario Autorizado")
           // Guardamos usuario y la navegacion se actualiza automaticamente al ejecutar dispatch. Que actualiza el Estado
           AsyncStorage.setItem('session', response.data.sessionHash)
           AsyncStorage.setItem('user', JSON.stringify(response.data.user))
