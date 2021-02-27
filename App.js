@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, Image } from 'react-native';
 import * as  SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -80,12 +80,56 @@ export default function App(props) {
         // We might want to provide this error information to an error reporting service
         console.warn(e);
       } finally {
-        setLoadingComplete(true);
-        SplashScreen.hideAsync();
+        // ...
       }
     }
 
+    // Obtenemos Datos de LocalStorage. Esta dentro de esta funcion para poder ejecutarlo de manera sincrona
+    // Fetch the token from storage then navigate to our appropriate place
+    const bootstrapAsync = async () => {
+      let session;
+      let themeScoped;
+
+      try {
+        session = await AsyncStorage.getItem('session');
+        themeScoped = await AsyncStorage.getItem('theme');
+      } catch (e) {
+        // Restoring token failed
+      }
+
+      // After restoring token, we may need to validate it in production apps
+
+      // This will switch to the App screen or Auth screen and this loading
+      // screen will be unmounted and thrown away.
+      dispatch({ type: 'RESTORE_TOKEN', token: session });
+
+      // Guardamos en el contexto que tema estamos usando
+      // de acuerdo a lo que tenemos en el AsyncStorage
+      if (themeScoped == null) {
+        // deja el tema por defecto
+        // No cambia el objeto theme porque ya esta por defecto
+        // Ademas si es nulo lo crea
+        AsyncStorage.setItem('theme', 'default')
+        dispatch({ type: 'UPDATE_THEME', theme: 'default' });
+        setTheme(CombinedDefaultTheme)
+      } else {
+        if (themeScoped == 'default') {
+          // theme = CombinedDefaultTheme
+          setTheme(CombinedDefaultTheme)
+          dispatch({ type: 'UPDATE_THEME', theme: 'default' });
+        } else if (themeScoped == 'dark') {
+          // theme = CombinedDarkTheme
+          setTheme(CombinedDarkTheme)
+          dispatch({ type: 'UPDATE_THEME', theme: 'dark' });
+        }
+      }
+      // Ahora que terminamos el Mambo seteamos como finalizado y escondemos el SplashScreen
+      setLoadingComplete(true);
+      SplashScreen.hideAsync();
+    };
+
     loadResourcesAndDataAsync();
+    bootstrapAsync();
   }, []);
 
 
@@ -136,50 +180,6 @@ export default function App(props) {
       themeName: 'default'
     }
   );
-  // Obtenemos Datos de LocalStorage. Esta dentro de esta funcion para poder ejecutarlo de manera sincrona
-  React.useEffect(() => {
-    // Fetch the token from storage then navigate to our appropriate place
-    const bootstrapAsync = async () => {
-      let session;
-      let themeScoped;
-
-      try {
-        session = await AsyncStorage.getItem('session');
-        themeScoped = await AsyncStorage.getItem('theme');
-      } catch (e) {
-        // Restoring token failed
-      }
-
-      // After restoring token, we may need to validate it in production apps
-
-      // This will switch to the App screen or Auth screen and this loading
-      // screen will be unmounted and thrown away.
-      dispatch({ type: 'RESTORE_TOKEN', token: session });
-
-      // Guardamos en el contexto que tema estamos usando
-      // de acuerdo a lo que tenemos en el AsyncStorage
-      if (themeScoped == null) {
-        // deja el tema por defecto
-        // No cambia el objeto theme porque ya esta por defecto
-        // Ademas si es nulo lo crea
-        AsyncStorage.setItem('theme', 'default')
-        dispatch({ type: 'UPDATE_THEME', theme: 'default' });
-        setTheme(CombinedDefaultTheme)
-      } else {
-        if (themeScoped == 'default') {
-          // theme = CombinedDefaultTheme
-          setTheme(CombinedDefaultTheme)
-          dispatch({ type: 'UPDATE_THEME', theme: 'default' });
-        } else if (themeScoped == 'dark') {
-          // theme = CombinedDarkTheme
-          setTheme(CombinedDarkTheme)
-          dispatch({ type: 'UPDATE_THEME', theme: 'dark' });
-        }
-      }
-    };
-
-    bootstrapAsync();
-  }, []);
 
   // Actualiza el tema onDemand
   React.useEffect(() => {
@@ -257,31 +257,12 @@ export default function App(props) {
       }
     },
     getTheme: () => state.themeName
-    
   }
 
   if (!isLoadingComplete && !props.skipLoadingScreen) {
     return null;
   } else {
     // Verificar si tiene session Iniciada o no. Redireccionar a Login en caso de No
-    // return (
-    //   <AuthContext.Provider value={authContextState}>
-    //     <PaperProvider>
-    //       <View style={styles.container}>
-    //         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-    //         <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
-    //           <Stack.Navigator>
-    //             {state.userToken ? (
-    //               <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: state.stackHeader }} />
-    //             ) : (
-    //                 <Stack.Screen name="Login" component={LoginScreen} />
-    //               )}
-    //           </Stack.Navigator>
-    //         </NavigationContainer>
-    //       </View>
-    //     </PaperProvider>
-    //   </AuthContext.Provider>
-    // );
     // Navegacion sin Stack sobre el TabNavigator (En caso de que todas las tab sean stack y tengan su propio header)
     return (
       <AuthContext.Provider value={authContextState}>
