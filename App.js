@@ -47,6 +47,10 @@ export default function App(props) {
   const [theme, setTheme] = React.useState(CombinedDefaultTheme);
   const containerRef = React.useRef();
   const { getInitialState } = useLinking(containerRef);
+
+  // Escondemos el SplashScreen por defecto para mostrar la Propia
+  SplashScreen.hideAsync();
+
   // ApiPrefix que se usa dentro del AuthContext. ya que parace que context
   // no puede referenciarse a si mismo
   const contextApiPrefix = 'https://scpp.lezora.cl:4343'
@@ -66,8 +70,6 @@ export default function App(props) {
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        SplashScreen.preventAutoHideAsync();
-
         // Load our initial navigation state
         setInitialNavigationState(await getInitialState());
 
@@ -124,8 +126,11 @@ export default function App(props) {
         }
       }
       // Ahora que terminamos el Mambo seteamos como finalizado y escondemos el SplashScreen
-      setLoadingComplete(true);
-      SplashScreen.hideAsync();
+      // Lo dejamos un poco para la animacion
+      setTimeout(async () => {
+        setLoadingComplete(true);
+      }, 2000);
+
     };
 
     loadResourcesAndDataAsync();
@@ -260,7 +265,36 @@ export default function App(props) {
   }
 
   if (!isLoadingComplete && !props.skipLoadingScreen) {
-    return null;
+    // Podemos retornar null si estamos usando
+    // el splashScreen por defecto
+    var gif = Math.round(Math.random())
+    return (
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column'
+      }}>
+          <Image
+            style={{ width: 400 }}
+            resizeMode='center'
+            source={require('./assets/images/splash.png')}
+          />
+          {gif == 0 ? (
+            <Image
+              style={{ width: 500, position: 'absolute', bottom: 0 }}
+              resizeMode='center'
+              source={require('./assets/images/pika-1.gif')}
+            />
+          ) : (
+              <Image
+                style={{ width: 200, position: 'absolute', bottom: 0 }}
+                resizeMode='center'
+                source={require('./assets/images/pika-2.gif')}
+              />
+            )}
+      </View>
+    )
   } else {
     // Verificar si tiene session Iniciada o no. Redireccionar a Login en caso de No
     // Navegacion sin Stack sobre el TabNavigator (En caso de que todas las tab sean stack y tengan su propio header)
