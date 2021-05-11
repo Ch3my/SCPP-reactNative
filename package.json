@@ -30,7 +30,7 @@
     "expo-linking": "~2.0.0",
     "expo-splash-screen": "~0.8.1",
     "expo-web-browser": "~8.6.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "native-base": "^2.13.12",
     "numeral": "^2.0.6",
