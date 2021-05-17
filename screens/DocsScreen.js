@@ -221,43 +221,43 @@ export default function DocsScreen({ navigation }) {
         {isLoading ? (
           <ProgressBar indeterminate />
         ) : (
-            <View>
-              <DataTable>
-                <DataTable.Header style={styles.tableHeader, headerBg()}>
-                  <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
-                    <Text style={styles.tableHeaderText}>Fecha</Text>
-                  </DataTable.Title>
-                  <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
-                    <Text style={styles.tableHeaderText}>Proposito</Text>
-                  </DataTable.Title>
-                  <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
-                    <Text style={styles.tableHeaderText}>Monto</Text>
-                  </DataTable.Title>
-                </DataTable.Header>
+          <View>
+            <DataTable>
+              <DataTable.Header style={styles.tableHeader, headerBg()}>
+                <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
+                  <Text style={styles.tableHeaderText}>Fecha</Text>
+                </DataTable.Title>
+                <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+                  <Text style={styles.tableHeaderText}>Proposito</Text>
+                </DataTable.Title>
+                <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+                  <Text style={styles.tableHeaderText}>Monto</Text>
+                </DataTable.Title>
+              </DataTable.Header>
 
-                {listOfData.map((item, key) => (
-                  <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
-                    overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                    <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
-                      <DataTable.Cell style={{ flex: 0.5 }}>{moment(item.fecha).format('D MMM')}</DataTable.Cell>
-                      <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
-                      <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
-                    </DataTable.Row>
-                  </Swipeable>
-                )
-                )}
-                {/* <DataTable.Pagination
+              {listOfData.map((item, key) => (
+                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+                  overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
+                  <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
+                    {/* moment.utc corrige el error que Moment parseara un dia menos */}
+                    <DataTable.Cell style={{ flex: 0.5 }}>{moment.utc(item.fecha).format('D MMM')}</DataTable.Cell>
+                    <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
+                    <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
+                  </DataTable.Row>
+                </Swipeable>
+              ))}
+              {/* <DataTable.Pagination
             page={1}
             numberOfPages={3}
             onPageChange={(page) => { console.log(page); }}
             label="1-2 of 6"
           /> */}
-              </DataTable>
-              <View style={styles.totalDiv}>
-                <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
-              </View>
+            </DataTable>
+            <View style={styles.totalDiv}>
+              <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
             </View>
-          )}
+          </View>
+        )}
 
       </View>
     </ScrollView>

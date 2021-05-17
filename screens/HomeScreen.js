@@ -1,19 +1,11 @@
 import * as React from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Dimensions, ActivityIndicator } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import * as WebBrowser from 'expo-web-browser';
-import { ProgressBar } from 'react-native-paper'
-// https://github.com/jerairrest/react-chartjs-2
-// Solo funciona en el Browser
-// import { Doughnut, HorizontalBar, Line, Pie } from 'react-chartjs-2';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
 
 import { WebView } from 'react-native-webview';
-
-import axios from 'axios'
-import numeral from 'numeral'
 
 export default function HomeScreen({ navigation }) {
 

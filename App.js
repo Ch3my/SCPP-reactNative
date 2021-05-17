@@ -127,9 +127,10 @@ export default function App(props) {
       }
       // Ahora que terminamos el Mambo seteamos como finalizado y escondemos el SplashScreen
       // Lo dejamos un poco para la animacion
-      setTimeout(async () => {
-        setLoadingComplete(true);
-      }, 2000);
+      // setTimeout(async () => {
+      //   setLoadingComplete(true);
+      // }, 2000);
+      setLoadingComplete(true);
 
     };
 
