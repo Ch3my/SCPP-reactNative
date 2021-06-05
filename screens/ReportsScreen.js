@@ -124,14 +124,11 @@ export default function ReportsScreen({ navigation }) {
   // Se muestre 2 veces al hacer clic en el Boton
   // Show es un flag de control para mostrar o no el DatePicker
   // https://github.com/react-native-community/react-native-datetimepicker/issues/54
-  const [dateFechaInicio, setDateFechaInicio] = useStateWithCallback(
-    '',
-    () => setShowDatePickerFechaInicioFlag(Platform.OS === 'ios'),
-  );
-
+  const [dateFechaInicio, setDateFechaInicio] = React.useState();
   const [showDatePickerFechaInicioFlag, setShowDatePickerFechaInicioFlag] = React.useState(false);
 
   const onChangeDateTimeFechaInicio = (event, selectedDate) => {
+    setShowDatePickerFechaInicioFlag(false)
     const currentDate = selectedDate || dateFechaInicio;
     setDateFechaInicio(currentDate);
   };
@@ -140,14 +137,11 @@ export default function ReportsScreen({ navigation }) {
   };
 
   // Fecha Termino Picker
-  const [dateFechaTermino, setDateFechaTermino] = useStateWithCallback(
-    '',
-    () => setShowDatePickerFechaTerminoFlag(Platform.OS === 'ios'),
-  );
-
+  const [dateFechaTermino, setDateFechaTermino] = React.useState()
   const [showDatePickerFechaTerminoFlag, setShowDatePickerFechaTerminoFlag] = React.useState(false);
 
   const onChangeDateTimeFechaTermino = (event, selectedDate) => {
+    setShowDatePickerFechaTerminoFlag(false)
     const currentDate = selectedDate || dateFechaTermino;
     setDateFechaTermino(currentDate);
   };
