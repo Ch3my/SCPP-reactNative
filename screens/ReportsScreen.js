@@ -221,6 +221,15 @@ export default function ReportsScreen({ navigation }) {
     // console.timeEnd("closeOtherSwipeables")
   }
 
+  function clearForm() {
+    // Seteamos todos los estados a null para no enviar a la API
+    // y obtener los resultados esperados
+    onUpdateTipoDoc(null, null)
+    setDateFechaTermino(null)
+    setDateFechaInicio(null)
+    setSearchPhrase('')
+    onUpdateCategoria(null, null)
+  }
 
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps='handled'>
@@ -262,7 +271,7 @@ export default function ReportsScreen({ navigation }) {
         {/* Botones */}
         <View style={{ flexDirection: 'row-reverse' }}>
           <Button mode="contained" style={styles.customInput} onPress={getDataAsync}>Procesar</Button>
-          <Button mode="outlined" style={{ marginBottom: 10, marginRight: 10 }}>Limpiar</Button>
+          <Button mode="outlined" style={{ marginBottom: 10, marginRight: 10 }} onPress={clearForm}>Limpiar</Button>
         </View>
 
 
