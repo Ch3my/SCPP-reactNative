@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Picker, Platform, Animated } from 'react-native';
+import { StyleSheet, Text, View, Platform, Animated, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
+// import * as WebBrowser from 'expo-web-browser';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
@@ -15,7 +15,7 @@ import moment from 'moment'
 import 'moment/locale/es'
 
 import { DataTable, IconButton, Button, ProgressBar, TextInput, Text as PaperText } from 'react-native-paper';
-import useStateWithCallback from 'use-state-with-callback';
+// import useStateWithCallback from 'use-state-with-callback';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Swipeable from 'react-native-gesture-handler/Swipeable';
@@ -40,7 +40,7 @@ export default function ReportsScreen({ navigation }) {
   //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
   //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
 
-  const [tipoDoc, setTipoDoc] = React.useState(-1);
+  const [tipoDoc, setTipoDoc] = React.useState(null);
   const [tipoDocName, setTipoDocName] = React.useState('');
 
   const onUpdateTipoDoc = ({ id, descripcion }) => {
@@ -55,7 +55,7 @@ export default function ReportsScreen({ navigation }) {
   // |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.   |  `----. /  _____  \      |  |     |  |____ |  |__| | |  `--'  | |  |\  \----.|  |  /  _____  \  
   // | _|      |__|  \______||__|\__\ |_______|| _| `._____|    \______|/__/     \__\     |__|     |_______| \______|  \______/  | _| `._____||__| /__/     \__\ 
 
-  const [category, setCategory] = React.useState(-1);
+  const [category, setCategory] = React.useState(null);
   const [categoriaName, setCategoriaName] = React.useState('');
 
   const onUpdateCategoria = ({ id, descripcion }) => {
@@ -74,30 +74,36 @@ export default function ReportsScreen({ navigation }) {
   const [listOfData, setListOfData] = React.useState([]);
 
   const getDataAsync = async () => {
+    // Esconde el Teclado
+    Keyboard.dismiss()
+
+    // Pone la tabla en estado de carga
     setIsLoading(true)
 
     // Reseteamos la variable que suma las filas mostradas en la tabla para volver a sumar
     sumaTotal.current = 0
 
     // Asume Fechas que el usuario ingreso o Todo el Año en Defecto 
-    let fechaInicio = dateFechaInicio || moment().format('YYYY-01-01')
-    let fechaTermino = dateFechaTermino || moment().format('YYYY-12-31')
+    // let fechaInicio = dateFechaInicio || moment().format('YYYY-01-01')
+    // let fechaTermino = dateFechaTermino || moment().format('YYYY-12-31')
+    let fechaInicio = dateFechaInicio || null
+    let fechaTermino = dateFechaTermino || null
 
-    let categoryReq = ''
+    // let categoryReq = ''
     // Verifica si la categoria es -1. Si lo es en realidad setea la variable envia como Undefined
-    if (category == -1) {
-      // No hacemos nada. Se va por Defecto Vacia
-    } else {
-      // Tiene algun Valor. Enviamos a la Req
-      categoryReq = category
-    }
+    // if (category == -1) {
+    //   // No hacemos nada. Se va por Defecto Vacia
+    // } else {
+    //   // Tiene algun Valor. Enviamos a la Req
+    //   categoryReq = category
+    // }
 
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
     let docs = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-docs', {
       params: {
         fk_tipoDoc: tipoDoc,
-        fk_categoria: categoryReq,
+        fk_categoria: category,
         fechaInicio,
         fechaTermino,
         sessionHash,
@@ -110,7 +116,6 @@ export default function ReportsScreen({ navigation }) {
     }
     setIsLoading(false)
     setListOfData(docs.data)
-
   }
 
   //  _______       ___      .___________. _______ .______    __    ______  __  ___  _______ .______      
@@ -224,11 +229,11 @@ export default function ReportsScreen({ navigation }) {
   function clearForm() {
     // Seteamos todos los estados a null para no enviar a la API
     // y obtener los resultados esperados
-    onUpdateTipoDoc(null, null)
+    onUpdateTipoDoc({id: null, descripcion: null})
     setDateFechaTermino(null)
     setDateFechaInicio(null)
     setSearchPhrase('')
-    onUpdateCategoria(null, null)
+    onUpdateCategoria({id: null, descripcion: null})
   }
 
   return (
