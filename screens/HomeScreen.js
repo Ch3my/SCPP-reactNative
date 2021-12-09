@@ -58,10 +58,10 @@ export default function HomeScreen({ navigation }) {
   }, [])
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
       {sessionHash != null && (
         <WebView source={{ uri: apiPrefix + '/api/v1/api-endpoints/onserver-graph-render?sessionHash=' + sessionHash }}
-          height={700} style={{ flex: 1 }} renderLoading={ActivityIndicatorLoadingView} startInLoadingState={true} ref={webviewRef} />
+           style={{ flex: 1 }} renderLoading={ActivityIndicatorLoadingView} startInLoadingState={true} ref={webviewRef} />
       )}
     </ScrollView>
   );
@@ -70,7 +70,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
   },
   contentContainer: {
     paddingTop: 30,
