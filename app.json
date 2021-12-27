@@ -28,6 +28,7 @@
     },
     "android": {
       "package": "com.chemy.scpp"
-    }
+    },
+    "jsEngine": "hermes"
   }
 }
