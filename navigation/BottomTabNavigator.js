@@ -66,7 +66,15 @@ export default function BottomTabNavigator({ navigation, route }) {
 
   // Escondemos los Label del TabNavigation para hacerlo mas parecido a Instagram
   return (
-    <BottomTab.Navigator initialRouteName={INITIAL_ROUTE_NAME} tabBarOptions={{ showLabel: false }} >
+    <BottomTab.Navigator initialRouteName={INITIAL_ROUTE_NAME} screenOptions={{
+      tabBarShowLabel: false,
+      tabBarStyle: [
+        {
+          display: "flex"
+        },
+      ],
+      headerShown:false
+    }} >
       <BottomTab.Screen
         name="Home"
         component={HomeScreenStack}

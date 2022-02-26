@@ -46,7 +46,8 @@ export default function App(props) {
   const [initialNavigationState, setInitialNavigationState] = React.useState();
   const [theme, setTheme] = React.useState(CombinedDefaultTheme);
   const containerRef = React.useRef();
-  const { getInitialState } = useLinking(containerRef);
+  // TODO Delete
+  // const { getInitialState } = useLinking(containerRef);
 
   // Escondemos el SplashScreen por defecto para mostrar la Propia
   SplashScreen.hideAsync();
@@ -70,8 +71,10 @@ export default function App(props) {
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
+
+        // TODO Delete
         // Load our initial navigation state
-        setInitialNavigationState(await getInitialState());
+        // setInitialNavigationState(await getInitialState());
 
         // Load fonts
         await Font.loadAsync({
@@ -303,7 +306,7 @@ export default function App(props) {
       <AuthContext.Provider value={authContextState}>
         <PaperProvider theme={theme}>
           <View style={styles.container}>
-            {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+            <StatusBar barStyle="default" />
             <NavigationContainer ref={containerRef} initialState={initialNavigationState} theme={theme}>
               {state.userToken ? (
                 <BottomTabNavigator />
