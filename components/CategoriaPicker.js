@@ -52,6 +52,8 @@ const CategoriaPicker = props => {
         getTipoDocAsync();
     }, []);
 
+    // Axios CancelToken when unmounted. Evitar mensaje NoOp?
+
     return (
         <View>
             <Button mode="outlined" onPress={showDialog}>Categoria</Button>

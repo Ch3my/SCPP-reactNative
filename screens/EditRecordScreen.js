@@ -11,7 +11,6 @@ import CategoriaPicker from '../components/CategoriaPicker'
 
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
-import useStateWithCallback from 'use-state-with-callback';
 
 import { TextInputMask } from 'react-native-masked-text'
 
@@ -239,7 +238,7 @@ export default function AddRecordScreen({ route }) {
             <View>
                 <ScrollView style={styles.contentContainer}>
                     <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={styles.customInput, styles.dateInputReadOnly}
+                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={[styles.customInput, styles.dateInputReadOnly]}
                             onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}
                             render={props =>
                                 <TextInputMask
@@ -267,7 +266,7 @@ export default function AddRecordScreen({ route }) {
                     )}
                     <View style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <TextInput mode="outlined" dense='true' label='Fecha' value={moment(date).format('YYYY-MM-DD')}
-                            style={styles.customInput, styles.dateInputReadOnly} />
+                            style={[styles.customInput, styles.dateInputReadOnly]} />
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
 
@@ -283,7 +282,7 @@ export default function AddRecordScreen({ route }) {
                         </View>
                     )}
 
-                    <Button mode="contained" onPress={updateRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
+                    <Button mode="contained" onPress={updateRecord} style={[styles.customInput, styles.saveButton]} >Guardar</Button>
                     <Button mode="outlined" style={{ marginTop: 10 }} onPress={clearForm}>Limpiar</Button>
 
                 </ScrollView>

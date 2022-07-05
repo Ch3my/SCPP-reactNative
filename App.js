@@ -13,7 +13,6 @@ import axios from 'axios'
 
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import LoginScreen from './screens/entrance/LoginScreen'
-import useLinking from './navigation/useLinking';
 
 // Tema oscuro
 // Saber si el SO tiene activado light/dark theme
@@ -271,7 +270,9 @@ export default function App(props) {
   if (!isLoadingComplete && !props.skipLoadingScreen) {
     // Podemos retornar null si estamos usando
     // el splashScreen por defecto
-    var gif = Math.round(Math.random())
+    // var gif = Math.round(Math.random())
+    // Como carga rapido con EAS no mostramos Gif Animado
+    
     return (
       <View style={{
         flex: 1,
@@ -284,7 +285,8 @@ export default function App(props) {
             resizeMode='center'
             source={require('./assets/images/splash.png')}
           />
-          {gif == 0 ? (
+          
+          {/* {gif == 0 ? (
             <Image
               style={{ width: 500, position: 'absolute', bottom: 0 }}
               resizeMode='center'
@@ -296,7 +298,7 @@ export default function App(props) {
                 resizeMode='center'
                 source={require('./assets/images/pika-2.gif')}
               />
-            )}
+            )} */}
       </View>
     )
   } else {
@@ -306,7 +308,7 @@ export default function App(props) {
       <AuthContext.Provider value={authContextState}>
         <PaperProvider theme={theme}>
           <View style={styles.container}>
-            <StatusBar barStyle="default" />
+            <StatusBar color="black"/>
             <NavigationContainer ref={containerRef} initialState={initialNavigationState} theme={theme}>
               {state.userToken ? (
                 <BottomTabNavigator />

@@ -6,7 +6,6 @@ import { TextInput, Button, Banner, Text as PaperText } from 'react-native-paper
 import axios from 'axios'
 // Imports para el DatePicker
 import DateTimePicker from '@react-native-community/datetimepicker';
-import useStateWithCallback from 'use-state-with-callback';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
 import TipoDocPicker from '../components/TipoDocPicker'
@@ -248,7 +247,7 @@ export default function AddRecordScreen() {
                         </View>
                     )}
 
-                    <Button mode="contained" onPress={saveNewRecord} style={styles.customInput, styles.saveButton} >Guardar</Button>
+                    <Button mode="contained" onPress={saveNewRecord} style={[styles.customInput, styles.saveButton]} >Guardar</Button>
                     <Button mode="outlined" style={{ marginTop: 10 }} onPress={clearForm}>Limpiar</Button>
 
                 </ScrollView>

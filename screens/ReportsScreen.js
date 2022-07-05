@@ -15,7 +15,6 @@ import moment from 'moment'
 import 'moment/locale/es'
 
 import { DataTable, IconButton, Button, ProgressBar, TextInput, Text as PaperText } from 'react-native-paper';
-// import useStateWithCallback from 'use-state-with-callback';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Swipeable from 'react-native-gesture-handler/Swipeable';
@@ -254,7 +253,7 @@ export default function ReportsScreen({ navigation }) {
         {/* DatePickers */}
         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
           <TextInput mode="outlined" dense='true' label='Fecha Inicio' value={dateFechaInicio && moment(dateFechaInicio).format('YYYY-MM-DD')}
-            style={styles.customInput, styles.dateInputReadOnly} />
+            style={[styles.customInput, styles.dateInputReadOnly]} />
           <Button mode="contained" onPress={showDatePickerFechaInicio} style={styles.dateInputButton}> &gt; </Button>
         </View>
         {showDatePickerFechaInicioFlag && (
@@ -264,7 +263,7 @@ export default function ReportsScreen({ navigation }) {
         )}
         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
           <TextInput mode="outlined" dense='true' label='Fecha Termino' value={dateFechaTermino && moment(dateFechaTermino).format('YYYY-MM-DD')}
-            style={styles.customInput, styles.dateInputReadOnly} />
+            style={[styles.customInput, styles.dateInputReadOnly]} />
           <Button mode="contained" onPress={showDatePickerFechaTermino} style={styles.dateInputButton}> &gt; </Button>
         </View>
         {showDatePickerFechaTerminoFlag && (
@@ -285,7 +284,7 @@ export default function ReportsScreen({ navigation }) {
         ) : (
           <View>
             <DataTable>
-              <DataTable.Header style={styles.tableHeader, headerBg()}>
+              <DataTable.Header style={[styles.tableHeader, headerBg()]}>
                 <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
                   <Text style={styles.tableHeaderText}>Fecha</Text>
                 </DataTable.Title>
@@ -375,7 +374,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: '#4aaacf',
-    height: 36
+    height: 42
   },
   tableHeaderText: {
     fontSize: 13

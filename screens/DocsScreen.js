@@ -1,8 +1,5 @@
 import * as React from 'react';
-// Usamos Picker aunque este deprecated por compatibilidad
 import { StyleSheet, Text, View, Animated } from 'react-native';
-// Parece que aun hay problemas usando la version nueva de Picker Linking
-// import {Picker} from '@react-native-community/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -223,7 +220,7 @@ export default function DocsScreen({ navigation }) {
         ) : (
           <View>
             <DataTable>
-              <DataTable.Header style={styles.tableHeader, headerBg()}>
+              <DataTable.Header style={[styles.tableHeader, headerBg()]}>
                 <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
                   <Text style={styles.tableHeaderText}>Fecha</Text>
                 </DataTable.Title>
@@ -309,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tableHeader: {
-    height: 36
+    height: 42
   },
   tableHeaderText: {
     fontSize: 13
