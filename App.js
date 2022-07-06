@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View, Image } from 'react-native';
+import { Platform, StyleSheet, View, Image } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import * as  SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -272,7 +273,7 @@ export default function App(props) {
     // el splashScreen por defecto
     // var gif = Math.round(Math.random())
     // Como carga rapido con EAS no mostramos Gif Animado
-    
+
     return (
       <View style={{
         flex: 1,
@@ -280,13 +281,13 @@ export default function App(props) {
         alignItems: 'center',
         flexDirection: 'column'
       }}>
-          <Image
-            style={{ width: 400 }}
-            resizeMode='center'
-            source={require('./assets/images/splash.png')}
-          />
-          
-          {/* {gif == 0 ? (
+        <Image
+          style={{ width: 400 }}
+          resizeMode='center'
+          source={require('./assets/images/splash.png')}
+        />
+
+        {/* {gif == 0 ? (
             <Image
               style={{ width: 500, position: 'absolute', bottom: 0 }}
               resizeMode='center'
@@ -304,19 +305,22 @@ export default function App(props) {
   } else {
     // Verificar si tiene session Iniciada o no. Redireccionar a Login en caso de No
     // Navegacion sin Stack sobre el TabNavigator (En caso de que todas las tab sean stack y tengan su propio header)
+
+    // Se tuvo que usar el componente de expo StatusBar para poder controlar la barra. No encontre
+    // una manera automatica que se ajustara asi que manualmente seteamos lo que corresponda segun el tema activo
     return (
       <AuthContext.Provider value={authContextState}>
         <PaperProvider theme={theme}>
           <View style={styles.container}>
-            <StatusBar color="black"/>
+            <StatusBar  style={state.themeName == 'dark' ? 'light' : 'dark'}/>
             <NavigationContainer ref={containerRef} initialState={initialNavigationState} theme={theme}>
               {state.userToken ? (
                 <BottomTabNavigator />
               ) : (
-                  <Stack.Navigator>
-                    <Stack.Screen name="Login" component={LoginScreen} />
-                  </Stack.Navigator>
-                )}
+                <Stack.Navigator>
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                </Stack.Navigator>
+              )}
             </NavigationContainer>
           </View>
         </PaperProvider>
