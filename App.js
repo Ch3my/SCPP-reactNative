@@ -46,8 +46,6 @@ export default function App(props) {
   const [initialNavigationState, setInitialNavigationState] = React.useState();
   const [theme, setTheme] = React.useState(CombinedDefaultTheme);
   const containerRef = React.useRef();
-  // TODO Delete
-  // const { getInitialState } = useLinking(containerRef);
 
   // Escondemos el SplashScreen por defecto para mostrar la Propia
   SplashScreen.hideAsync();
@@ -71,11 +69,6 @@ export default function App(props) {
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-
-        // TODO Delete
-        // Load our initial navigation state
-        // setInitialNavigationState(await getInitialState());
-
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
