@@ -60,7 +60,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
       {sessionHash != null && (
-        <WebView source={{ uri: apiPrefix + '/api/v1/api-endpoints/onserver-graph-render?sessionHash=' + sessionHash }}
+        <WebView source={{ uri: apiPrefix + '/dashboard?sessionHash=' + sessionHash }}
            style={{ flex: 1 }} renderLoading={ActivityIndicatorLoadingView} startInLoadingState={true} ref={webviewRef} />
       )}
     </ScrollView>

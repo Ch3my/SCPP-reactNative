@@ -80,7 +80,7 @@ export default function AddRecordScreen() {
         var sessionHash = await AsyncStorage.getItem('session');
         argins.sessionHash = sessionHash
         // TODO. Verificar que se grabo
-        axios.post(apiPrefix + '/api/v1/api-endpoints/post-save-doc', argins)
+        axios.post(apiPrefix + '/documentos', argins)
             .then(function (response) {
                 if (response.data.hasErrors) {
                     setFeedback(true)

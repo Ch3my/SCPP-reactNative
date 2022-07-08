@@ -54,9 +54,9 @@ export default function App(props) {
 
   // ApiPrefix que se usa dentro del AuthContext. ya que parace que context
   // no puede referenciarse a si mismo
-  const contextApiPrefix = 'https://scpp.lezora.cl:4343'
+  const contextApiPrefix = 'https://scpp.lezora.cl'
   // Development
-  // const contextApiPrefix = 'http://192.168.2.20:1337'
+  // const contextApiPrefix = 'http://192.168.2.20:3000'
 
   // Saber que tema esta usando el SO
   const colorScheme = Appearance.getColorScheme();
@@ -203,15 +203,15 @@ export default function App(props) {
 
   const authContextState = {
     isLoggedIn: false,
-    apiPrefix: 'https://scpp.lezora.cl:4343',
+    apiPrefix: 'https://scpp.lezora.cl',
     // Development
-    // apiPrefix: 'http://192.168.2.20:1337',
+    // apiPrefix: 'http://192.168.2.20:3000',
     login: data => {
       var argins = {
         username: data.username.username,
         password: data.password.password,
       }
-      axios.post(contextApiPrefix + '/api/v1/api-endpoints/entrance/login', argins
+      axios.post(contextApiPrefix + '/login', argins
       ).then(response => {
         if (response.status != 200) {
           console.log("El usuario no esta autorizado")
@@ -227,7 +227,7 @@ export default function App(props) {
       })
     },
     logout: sessionHash => {
-      axios.get(contextApiPrefix + '/api/v1/api-endpoints/entrance/logout', {
+      axios.post(contextApiPrefix + '/logout', {
         params: {
           sessionHash: sessionHash
         }

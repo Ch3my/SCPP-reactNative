@@ -83,7 +83,7 @@ export default function DocsScreen({ navigation }) {
     }
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
-    let docs = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-docs', {
+    let docs = await axios.get(apiPrefix + '/documentos', {
       params: {
         fk_tipoDoc: tipoDoc.current,
         fechaInicio,
@@ -148,7 +148,7 @@ export default function DocsScreen({ navigation }) {
           // Obtiene la Session 
           var sessionHash = await AsyncStorage.getItem('session');
           // Enviar al Servidor la eliminacion de este Registro y recargar la tabla
-          await axios.delete(apiPrefix + '/api/v1/api-endpoints/delete-doc', { data: { id, sessionHash } });
+          await axios.delete(apiPrefix + '/documentos', { data: { id, sessionHash } });
           getDataAsync();
         } catch (e) {
           console.log("Error al eliminar Documento")

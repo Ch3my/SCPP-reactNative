@@ -36,11 +36,12 @@ const TipoDocPicker = props => {
         const getTipoDocAsync = async () => {
             // Obtiene la Session 
             var sessionHash = await AsyncStorage.getItem('session');
-            let tipoDoc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-tipo-doc', {
+            let tipoDoc = await axios.get(apiPrefix + '/tipo-docs', {
                 params: {
                     sessionHash
                 }
             }).catch((err) => { console.log(err) })
+            console.log(tipoDoc);
             // Probablemente este Error es que el Token no es valido
             // Cerramos la Sesion
             if (tipoDoc.data.hasErrors) {

@@ -36,7 +36,7 @@ const CategoriaPicker = props => {
         const getTipoDocAsync = async () => {
             // Obtiene la Session 
             var sessionHash = await AsyncStorage.getItem('session');
-            let categoria = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-categorias', {
+            let categoria = await axios.get(apiPrefix + '/categorias', {
                 params: {
                     sessionHash
                 }
