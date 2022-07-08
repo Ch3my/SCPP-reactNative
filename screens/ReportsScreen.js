@@ -82,24 +82,12 @@ export default function ReportsScreen({ navigation }) {
     // Reseteamos la variable que suma las filas mostradas en la tabla para volver a sumar
     sumaTotal.current = 0
 
-    // Asume Fechas que el usuario ingreso o Todo el Año en Defecto 
-    // let fechaInicio = dateFechaInicio || moment().format('YYYY-01-01')
-    // let fechaTermino = dateFechaTermino || moment().format('YYYY-12-31')
     let fechaInicio = dateFechaInicio || null
     let fechaTermino = dateFechaTermino || null
 
-    // let categoryReq = ''
-    // Verifica si la categoria es -1. Si lo es en realidad setea la variable envia como Undefined
-    // if (category == -1) {
-    //   // No hacemos nada. Se va por Defecto Vacia
-    // } else {
-    //   // Tiene algun Valor. Enviamos a la Req
-    //   categoryReq = category
-    // }
-
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
-    let docs = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-docs', {
+    let docs = await axios.get(apiPrefix + '/documentos', {
       params: {
         fk_tipoDoc: tipoDoc,
         fk_categoria: category,
@@ -251,7 +239,7 @@ export default function ReportsScreen({ navigation }) {
           style={styles.customInput} onChangeText={text => setSearchPhrase(text)} />
 
         {/* DatePickers */}
-        <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+        <View style={{ flexDirection: 'row' }}>
           <TextInput mode="outlined" dense='true' label='Fecha Inicio' value={dateFechaInicio && moment(dateFechaInicio).format('YYYY-MM-DD')}
             style={[styles.customInput, styles.dateInputReadOnly]} />
           <Button mode="contained" onPress={showDatePickerFechaInicio} style={styles.dateInputButton}> &gt; </Button>
@@ -275,7 +263,7 @@ export default function ReportsScreen({ navigation }) {
         {/* Botones */}
         <View style={{ flexDirection: 'row-reverse' }}>
           <Button mode="contained" style={styles.customInput} onPress={getDataAsync}>Procesar</Button>
-          <Button mode="outlined" style={{ marginBottom: 10, marginRight: 10 }} onPress={clearForm}>Limpiar</Button>
+          <Button mode="outlined" style={[styles.customInput, {marginRight: 10}]} onPress={clearForm}>Limpiar</Button>
         </View>
 
 
@@ -355,7 +343,7 @@ const styles = StyleSheet.create({
     marginTop: 15
   },
   customInput: {
-    marginBottom: 10,
+    marginBottom: 5,
   },
   dateInputReadOnly: {
     width: '75%'
@@ -363,6 +351,7 @@ const styles = StyleSheet.create({
   dateInputButton: {
     marginLeft: 5,
     marginTop: 5,
+    height: 43
   },
   rightAction: {
     alignItems: 'center',
