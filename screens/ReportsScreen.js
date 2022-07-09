@@ -87,14 +87,16 @@ export default function ReportsScreen({ navigation }) {
 
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
+    // Nos aseguramos de pasar la fecha con formato correcto o null si corresponde. Por si acaso
+    // sino se va con la hora tambien
     let docs = await axios.get(apiPrefix + '/documentos', {
       params: {
         fk_tipoDoc: tipoDoc,
         fk_categoria: category,
-        fechaInicio,
-        fechaTermino,
-        sessionHash,
-        searchPhrase
+        fechaInicio: fechaInicio == null ? null : moment(fechaInicio).format('YYYY-MM-DD'),
+        fechaTermino: fechaTermino == null ? null : moment(fechaTermino).format('YYYY-MM-DD'),
+        sessionHash: sessionHash,
+        searchPhrase: searchPhrase
       }
     }).catch((err) => { console.log(err) })
     // Recorremos el array para sumar el Total
