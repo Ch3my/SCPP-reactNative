@@ -20,7 +20,7 @@ import numeral from 'numeral'
 
 export default function HomeScreen({ navigation }) {
 
-  const [sessionHash, setSessionHash] = React.useState(null);
+  // const [sessionHash, setSessionHash] = React.useState(null);
   const [monthlyGraphData, setMonthlyGraphData] = React.useState(null);
   // const didMount = React.useRef(false)
 
@@ -44,26 +44,27 @@ export default function HomeScreen({ navigation }) {
 
   // Obtenemos Hash para enviar al servidor y hacer renderizado alla
   // Solo mostramos Webview que contiene una web especial
-  const getSessionHash = async () => {
-    var sessionHash = await AsyncStorage.getItem('session');
-    setSessionHash(sessionHash)
-    // didMount.current = true
-  }
+  // const getSessionHash = async () => {
+  //   var sessionHash = await AsyncStorage.getItem('session');
+  //   setSessionHash(sessionHash)
+  //   // didMount.current = true
+  // }
 
   const getDataAsync = async () => {
     var sessionHash = await AsyncStorage.getItem('session');
+    console.log(apiPrefix + '/monthly-graph?nMonths=5&sessionHash=' +sessionHash);
     let monthlyGraphData = await axios.get(apiPrefix + '/monthly-graph', {
       params: {
-        sessionHash,
+        sessionHash: sessionHash,
         nMonths: 5
       }
     }).catch((err) => { console.log(err) })
     monthlyGraphData = monthlyGraphData.data
     if(monthlyGraphData.hasErrors) {
       logout(sessionHash)
-      return
+    } else {
+      setMonthlyGraphData(monthlyGraphData)
     }
-    setMonthlyGraphData(monthlyGraphData)
   };
 
 
@@ -148,9 +149,9 @@ export default function HomeScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-  React.useEffect(() => {
-    getSessionHash()
-  }, [])
+  // React.useEffect(() => {
+  //   getSessionHash()
+  // }, [])
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
