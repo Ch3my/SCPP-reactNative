@@ -25,7 +25,7 @@ export default function HomeScreen({ navigation }) {
   // const didMount = React.useRef(false)
 
   // Se trae el prefix para acceder a la API
-  const { apiPrefix } = React.useContext(AuthContext)
+  const { logout, apiPrefix } = React.useContext(AuthContext)
 
   // const ActivityIndicatorLoadingView = () => {
   //   //making a view to show to while loading the webpage
@@ -59,6 +59,10 @@ export default function HomeScreen({ navigation }) {
       }
     }).catch((err) => { console.log(err) })
     monthlyGraphData = monthlyGraphData.data
+    if(monthlyGraphData.hasErrors) {
+      logout(sessionHash)
+      return
+    }
     setMonthlyGraphData(monthlyGraphData)
   };
 
