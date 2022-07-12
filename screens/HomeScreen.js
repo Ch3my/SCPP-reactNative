@@ -1,19 +1,18 @@
 import * as React from 'react';
 import {
-  Image, Platform, StyleSheet, Text, TouchableOpacity,
+  Image, Platform, StyleSheet, TouchableOpacity,
   View, Dimensions, ActivityIndicator
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { Text } from 'react-native-paper';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph
-} from 'react-native-chart-kit'
+
+import Svg, { G, Circle, Path, Line, Polyline } from "react-native-svg";
+
+import LineChart from '../components/ChartSVG/LineChart'
 
 import axios from 'axios'
 import numeral from 'numeral'
@@ -52,7 +51,7 @@ export default function HomeScreen({ navigation }) {
 
   const getDataAsync = async () => {
     var sessionHash = await AsyncStorage.getItem('session');
-    console.log(apiPrefix + '/monthly-graph?nMonths=5&sessionHash=' +sessionHash);
+    console.log(apiPrefix + '/monthly-graph?nMonths=5&sessionHash=' + sessionHash);
     let monthlyGraphData = await axios.get(apiPrefix + '/monthly-graph', {
       params: {
         sessionHash: sessionHash,
@@ -60,7 +59,7 @@ export default function HomeScreen({ navigation }) {
       }
     }).catch((err) => { console.log(err) })
     monthlyGraphData = monthlyGraphData.data
-    if(monthlyGraphData.hasErrors) {
+    if (monthlyGraphData.hasErrors) {
       logout(sessionHash)
     } else {
       setMonthlyGraphData(monthlyGraphData)
@@ -69,65 +68,21 @@ export default function HomeScreen({ navigation }) {
 
 
   const BuildMonthlyChart = () => {
-    const formatYLabel = (label) => {
-      var formatted = '$' + numeral(label).format('0,0')
-      return formatted
-    }
-    const dataPointClick = ({ value, dataset, getColor }) => {
-      console.log('dataPointClick');
-      return (
-        <Text>{value}</Text>
-      )
-    }
-
     if (monthlyGraphData) {
       return (
-        <LineChart
-          data={{
-            labels: monthlyGraphData.labels,
-            datasets: [{
-              data: monthlyGraphData.gastosDataset,
-              color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`, // optional
-            }, {
-              data: monthlyGraphData.ingresosDataset,
-              color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`, // optional
-            }, {
-              data: monthlyGraphData.ahorrosDataset,
-              color: (opacity = 1) => `rgba(255, 205, 86, ${opacity})`, // optional
-            }],
-            legend: ["Gastos", "Ingresos", "Ahorros"] // optional
-          }}
-
-          formatYLabel={formatYLabel}
-          horizontalLabelRotation={320}
-          onDataPointClick={dataPointClick} // ejecuta una funcion pero no renderiza
-          fromZero={true}
-          width={Dimensions.get('window').width - 10} // from react-native
-          height={220}
-          withShadow={false}
-          segments={4} // cantidad de medidas en Y
-          chartConfig={{
-            // backgroundColor: '#e26a00',
-            // backgroundGradientFrom: '#fb8c00',
-            // backgroundGradientTo: '#ffa726',
-            decimalPlaces: 0, // optional, defaults to 2dp
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            strokeWidth: 3, // optional, default 3
-            style: {
-              // borderRadius: 5
-            },
-            propsForDots: {
-              // r: "6",
-              // strokeWidth: "2",
-              // stroke: "#ffa726"
-            }
-          }}
-          style={{
-            marginVertical: 8,
-            borderRadius: 5,
-            alignItems: 'center'
-          }}
-        />
+        <LineChart datasets={[{ 
+          data: monthlyGraphData.gastosDataset,
+          color: 'rgba(255, 99, 132, 1)'
+        }, {
+          data: monthlyGraphData.ingresosDataset,
+          color: 'rgba(4, 162, 235, 1)'
+        }, {
+          data: monthlyGraphData.ahorrosDataset,
+          color: 'rgba(255, 205, 86, 1)'
+        }]}
+          totalWidth={Dimensions.get('window').width}
+          totalHeight="250" 
+          labels={monthlyGraphData.labels} />
       )
     } else {
       return (
