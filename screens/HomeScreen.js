@@ -5,49 +5,21 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
-import { Text } from 'react-native-paper';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from '../context/AuthContext'
-
-import Svg, { G, Circle, Path, Line, Polyline } from "react-native-svg";
 
 import LineChart from '../components/ChartSVG/LineChart'
 
 import axios from 'axios'
 import numeral from 'numeral'
 
-export default function HomeScreen({ navigation }) {
+import { Text, DataTable, IconButton, Button, ProgressBar } from 'react-native-paper';
 
-  // const [sessionHash, setSessionHash] = React.useState(null);
+export default function HomeScreen({ navigation }) {
   const [monthlyGraphData, setMonthlyGraphData] = React.useState(null);
-  // const didMount = React.useRef(false)
 
   // Se trae el prefix para acceder a la API
-  const { logout, apiPrefix } = React.useContext(AuthContext)
-
-  // const ActivityIndicatorLoadingView = () => {
-  //   //making a view to show to while loading the webpage
-  //   return (
-  //     <ActivityIndicator
-  //       color="#007bff"
-  //       size="large"
-  //       style={{
-  //         top: 0, bottom: 0,
-  //         left: 0, right: 0,
-  //         position: 'absolute'
-  //       }}
-  //     />
-  //   );
-  // }
-
-  // Obtenemos Hash para enviar al servidor y hacer renderizado alla
-  // Solo mostramos Webview que contiene una web especial
-  // const getSessionHash = async () => {
-  //   var sessionHash = await AsyncStorage.getItem('session');
-  //   setSessionHash(sessionHash)
-  //   // didMount.current = true
-  // }
+  const { logout, apiPrefix, getTheme } = React.useContext(AuthContext)
 
   const getDataAsync = async () => {
     var sessionHash = await AsyncStorage.getItem('session');
@@ -70,7 +42,7 @@ export default function HomeScreen({ navigation }) {
   const BuildMonthlyChart = () => {
     if (monthlyGraphData) {
       return (
-        <LineChart datasets={[{ 
+        <LineChart datasets={[{
           data: monthlyGraphData.gastosDataset,
           color: 'rgba(255, 99, 132, 1)'
         }, {
@@ -81,8 +53,9 @@ export default function HomeScreen({ navigation }) {
           color: 'rgba(255, 205, 86, 1)'
         }]}
           totalWidth={Dimensions.get('window').width}
-          totalHeight="250" 
-          labels={monthlyGraphData.labels} />
+          totalHeight="250"
+          labels={monthlyGraphData.labels}
+          yAxisPrefix='$ ' />
       )
     } else {
       return (
@@ -91,6 +64,70 @@ export default function HomeScreen({ navigation }) {
           size="large"
         />
       );
+    }
+  }
+
+  const BuildMonthlyTable = () => {
+    // Lo mismo que las filas Odd pero para el color del header
+    const headerBg = theme => {
+      var backgroundColor = ''
+      if (theme == 'default') {
+        backgroundColor = '#def5ff'
+      } else {
+        backgroundColor = '#2f2f2f'
+      }
+      return {
+        backgroundColor
+      }
+    }
+    // No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
+    const oddRowsProcessewdStyle = theme => {
+      var backgroundColor = ''
+      // Controla el color dependiendo del tema en el que estamos
+      if (theme == 'default') {
+        backgroundColor = '#def5ff'
+      } else {
+        backgroundColor = '#222'
+      }
+      return {
+        backgroundColor
+      }
+    }
+
+    if (monthlyGraphData) {
+      let rows = []
+      for (let i = monthlyGraphData.labels.length - 1; i > -1; i--) {
+        rows.push(
+          <DataTable.Row key={i} style={i % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
+            <DataTable.Cell>{monthlyGraphData.labels[i]}</DataTable.Cell>
+            <DataTable.Cell numeric>{numeral(monthlyGraphData.ingresosDataset[i]).format('0,0')}</DataTable.Cell>
+            <DataTable.Cell numeric>{numeral(monthlyGraphData.gastosDataset[i]).format('0,0')}</DataTable.Cell>
+            <DataTable.Cell numeric > {numeral(monthlyGraphData.ahorrosDataset[i]).format('0,0')}</DataTable.Cell>
+          </DataTable.Row>
+        )
+      }
+
+      return (
+        <DataTable style={{ padding: 10 }}>
+          <DataTable.Header style={[styles.tableHeader, headerBg()]}>
+            <DataTable.Title style={{ paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Fecha</Text>
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Ingresos</Text>
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Gastos</Text>
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Ahorros</Text>
+            </DataTable.Title>
+          </DataTable.Header>
+          {rows}
+        </DataTable>
+      )
+    } else {
+      return null
     }
   }
 
@@ -104,13 +141,10 @@ export default function HomeScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-  // React.useEffect(() => {
-  //   getSessionHash()
-  // }, [])
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
       <BuildMonthlyChart></BuildMonthlyChart>
+      <BuildMonthlyTable></BuildMonthlyTable>
     </ScrollView>
   );
 }
@@ -118,11 +152,16 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#fff',
   },
   contentContainer: {
     paddingTop: 30,
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  tableHeader: {
+    height: 42
+  },
+  tableHeaderText: {
+    fontSize: 13
   },
 });

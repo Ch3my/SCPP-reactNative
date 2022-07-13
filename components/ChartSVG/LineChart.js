@@ -1,22 +1,22 @@
 import Svg, { G, Circle, Path, Line, Polyline, Text } from "react-native-svg";
 import {
     Image, Platform, StyleSheet, TouchableOpacity,
-    View, Dimensions, ActivityIndicator
+    View, Dimensions, ActivityIndicator, Pressable
 } from 'react-native';
+import numeral from 'numeral'
 
 
-const SVGPADDINGLEFT = 50
+const SVGPADDINGLEFT = 80
 const SVGPADDINGTOP = 25
-
+const YAXISDIVISIONS = 4
 
 const LineChart = props => {
     // El alto total del Grafico sera el alto que nos pasaron menos un pedazo para
     // las etiquetas
     let chartHeight = props.totalHeight - 80
-    let chartWidth = props.totalWidth - 50
+    let chartWidth = props.totalWidth - 80
 
     // SVG 0,0 es la esq sup izq
-    console.log(props);
     // totalHeight<Integer>, totalWidth<Integer>, dataset<Obj Arr>, labels<String Array>
     // datasets: [{data:[], color: String }]
 
@@ -31,35 +31,51 @@ const LineChart = props => {
     }
 
     let paths = []
+    let dots = []
     for (let [index, d] of props.datasets.entries()) {
         paths.push(
             buildPath(chartHeight, chartWidth, d, index, higherPoint)
         )
+        dots.push(buildDatasetChartPoint(chartHeight, chartWidth, d, index, higherPoint))
     }
 
-    console.log(props.labels);
-    let labels = buildLabels(chartWidth, chartHeight, props.labels)
+    let labelsX = buildLabelsX(chartWidth, chartHeight, props.labels)
+    let labelsY = buildLabelsY(chartHeight, higherPoint, props.yAxisPrefix)
+    let lines = buildLinesXY(chartWidth, chartHeight)
+
 
     return (
-        <View style={styles.chartContainer}>
+        <View>
             <Svg height={props.totalHeight} width={props.totalWidth}>
+                {lines}
                 {paths}
-                <Line x1={SVGPADDINGLEFT} y={chartHeight + SVGPADDINGTOP} x2={chartWidth} strokeWidth="3" stroke="blue" />
-                <Line x={SVGPADDINGLEFT} y1={chartHeight + SVGPADDINGTOP} y2={0 + SVGPADDINGTOP} strokeWidth="3" stroke="blue" />
-
-                {labels}
+                {labelsX}
+                {labelsY}
+                {dots}
             </Svg>
         </View>
     )
 }
 
-const buildLabels = (chartWidth, chartHeight, labels) => {
-    let xSeparation = Math.round(chartWidth / labels.length)
+const buildLinesXY = (chartWidth, chartHeight) => {
+    // La linea X siempre quedaba un poco corta. No descubri porque
+    // pero quiza sea un error en las matematicas de xSeparation de los Paths
+    // por ahora le sumamos una cola para que quede bien
+    return (
+        <View>
+            <Line x1={SVGPADDINGLEFT} x2={chartWidth + 25} y={chartHeight + SVGPADDINGTOP} strokeWidth="1" stroke="#808080" />
+            <Line y1={chartHeight + SVGPADDINGTOP} y2={0 + SVGPADDINGTOP} x={SVGPADDINGLEFT} strokeWidth="1" stroke="#808080" />
+        </View>
+    )
+}
+
+const buildLabelsX = (chartWidth, chartHeight, labels) => {
+    let xSeparation = Math.floor(chartWidth / labels.length)
+    let yCordinate = (chartHeight + SVGPADDINGTOP) + 25
 
     let labelsComp = []
     for (let [index, l] of labels.entries()) {
         let xCordinate = SVGPADDINGLEFT + (xSeparation * index)
-        let yCordinate = (chartHeight + SVGPADDINGTOP) + 25
 
         labelsComp.push(
             <Text key={index} x={xCordinate} y={yCordinate}
@@ -67,6 +83,40 @@ const buildLabels = (chartWidth, chartHeight, labels) => {
                 rotation={-30} originX={xCordinate} originY={yCordinate}>{l}</Text>
         )
     }
+    return labelsComp
+}
+
+const buildLabelsY = (chartHeight, higherPoint, yAxisPrefix) => {
+    let labelsComp = []
+    let step = higherPoint / YAXISDIVISIONS
+    var labelValues = []
+    let xCordinate = SVGPADDINGLEFT - 5
+    let ySeparation = Math.floor(chartHeight / YAXISDIVISIONS)
+
+    for (let i = 0; i < YAXISDIVISIONS; i++) {
+        labelValues.push(Math.round(step * i))
+    }
+
+    for (let [index, l] of labelValues.entries()) {
+        let yCordinate
+        if (index == 0) {
+            yCordinate = chartHeight + SVGPADDINGTOP
+        } else {
+            yCordinate = (chartHeight + SVGPADDINGTOP) - ySeparation * index
+        }
+
+        labelsComp.push(
+            <Text x={xCordinate} y={yCordinate} textAnchor="end" key={index}
+                stroke="white" fontWeight="100">{yAxisPrefix + numeral(l).format('0,0')}</Text>
+        )
+    }
+
+    // Añadimos el punto mas alto
+    labelsComp.push(
+        <Text key={YAXISDIVISIONS + 1} x={xCordinate} y={(chartHeight + SVGPADDINGTOP) - ySeparation * YAXISDIVISIONS + 1} textAnchor="end"
+            stroke="white" fontWeight="100">{yAxisPrefix + numeral(higherPoint).format('0,0')}</Text>
+    )
+
     return labelsComp
 }
 
@@ -78,25 +128,41 @@ const buildPath = (totalHeight, totalWidth, dataset, index, higherPoint) => {
             d={d}
             fill="none"
             stroke={dataset.color}
-            strokeWidth="3"
+            strokeWidth="2"
             key={index}
         />
     )
 }
 
-const buildPathD = (totalHeight, totalWidth, dataset, higherPoint) => {
+const buildDatasetChartPoint = (chartHeight, chartWidth, dataset, index, higherPoint) => {
+    let pointCoordinates = buildPointsCordinates(chartHeight, chartWidth, dataset.data, higherPoint)
+    let dots = []
+
+    for (let [sec, p] of pointCoordinates.entries()) {
+        dots.push(
+                <Circle
+                    key={index + '-' + sec}
+                    cx={p.x}
+                    cy={p.y}
+                    r="4"
+                    fill={dataset.color}
+                />
+        )
+    }
+    return dots
+}
+
+const buildPointsCordinates = (chartHeight, chartWidth, dataset, higherPoint) => {
     // Para calcular cada X simplemente tomaremos el totalWidth y lo dividiremos por
     // dataset.length asi cada uno quedara a la misma separacion
-    let xSeparation = Math.round(totalWidth / dataset.length)
+
+    let xSeparation = Math.floor(chartWidth / dataset.length)
     // pointCoordinates es un array de Objetos [{x:Integer, y:Integer}]
     let pointCoordinates = []
 
     // Encontrar el punto mas alto del dataset para crear ratio con el tamaño del grafico
     // var higherPoint = Math.max(...dataset)
-    var yRatio = higherPoint / totalHeight
-
-    // Construimos d de un dataset
-    let d = ``
+    var yRatio = higherPoint / chartHeight
 
     // Hacemos loop y marcamos cada punto
     // Como 0.0 es arriba tenemos que cambiar la orientacion de Y
@@ -104,9 +170,18 @@ const buildPathD = (totalHeight, totalWidth, dataset, higherPoint) => {
     for (let [index, p] of dataset.entries()) {
         pointCoordinates.push({
             x: (index * xSeparation) + SVGPADDINGLEFT,
-            y: (totalHeight - (p / yRatio)) + SVGPADDINGTOP
+            y: (chartHeight - (p / yRatio)) + SVGPADDINGTOP
         })
     }
+
+    return pointCoordinates
+}
+
+const buildPathD = (totalHeight, totalWidth, dataset, higherPoint) => {
+    let pointCoordinates = buildPointsCordinates(totalHeight, totalWidth, dataset, higherPoint)
+
+    // Construimos d de un dataset
+    let d = ``
 
     for (let [index, p] of pointCoordinates.entries()) {
         if (index == 0) {
@@ -121,15 +196,7 @@ const buildPathD = (totalHeight, totalWidth, dataset, higherPoint) => {
 }
 
 const styles = StyleSheet.create({
-    chartContainer: {
-        // borderColor: "green",
-        // borderStyle: "solid",
-        // borderWidth: 1,
-        // paddingLeft: 50,
-        // paddingTop: 50,
-        // paddingBottom: 50,
-        // paddingRight: 50,
-    },
+
 });
 
 export default LineChart;
