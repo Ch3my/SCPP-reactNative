@@ -83,7 +83,7 @@ export default function AddRecordScreen({ route }) {
         var sessionHash = await AsyncStorage.getItem('session');
         argins.sessionHash = sessionHash
         // TODO. Verificar que se grabo
-        axios.put(apiPrefix + '/api/v1/api-endpoints/update-doc', argins)
+        axios.put(apiPrefix + '/documentos', argins)
             .then(function (response) {
                 if (response.data.hasErrors) {
                     setFeedback(true)
@@ -187,21 +187,23 @@ export default function AddRecordScreen({ route }) {
         const fetchCurrentRecord = async () => {
             // Obtiene la Session 
             var sessionHash = await AsyncStorage.getItem('session')
-            let doc = await axios.get(apiPrefix + '/api/v1/api-endpoints/get-doc', {
+            let doc = await axios.get(apiPrefix + '/documentos', {
                 params: {
                     sessionHash,
-                    id
+                    id: [id] 
                 }
             }).catch((err) => { console.log(err) })
-            doc = doc.data
+            doc = doc.data[0]
             // Guardamos los datos en el formulario para que el usuario Edite
             setMonto(doc.monto.toString())
             setProposito(doc.proposito)
-            setDate(new Date(doc.fecha))
-            setCategory(doc.categorias_id)
-            setCategoriaName(doc.categorias_descripcion)
-            setTipoDoc(doc.tipodoc_id)
-            setTipoDocName(doc.tipodoc_descripcion)
+            // Para evitar que se confunda con el offset de la fecha
+            // similar a la solucion moment.utc()
+            setDate(new Date(doc.fecha.substring(0,10).split('-')))
+            setCategory(doc.fk_categoria)
+            setCategoriaName(doc.categoria.descripcion)
+            setTipoDoc(doc.fk_tipoDoc)
+            setTipoDocName(doc.tipoDoc.descripcion)
         }
         fetchCurrentRecord()
     }, [])
@@ -238,7 +240,7 @@ export default function AddRecordScreen({ route }) {
             <View>
                 <ScrollView style={styles.contentContainer}>
                     <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={[styles.customInput, styles.dateInputReadOnly]}
+                        <TextInput mode="outlined" dense='true' label='Monto' value={monto} style={[styles.dateInputReadOnly]}
                             onChangeText={text => setMonto(text)} keyboardType={'decimal-pad'}
                             render={props =>
                                 <TextInputMask
@@ -266,7 +268,7 @@ export default function AddRecordScreen({ route }) {
                     )}
                     <View style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <TextInput mode="outlined" dense='true' label='Fecha' value={moment(date).format('YYYY-MM-DD')}
-                            style={[styles.customInput, styles.dateInputReadOnly]} />
+                            style={[styles.dateInputReadOnly]} />
                         <Button mode="contained" onPress={showDatepicker} style={styles.dateInputButton}> &gt; </Button>
                     </View>
 

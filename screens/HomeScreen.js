@@ -49,7 +49,7 @@ export default function HomeScreen({ navigation }) {
       }
     }).catch((err) => { console.log(err) })
     barChartData = barChartData.data
-    console.log(barChartData)
+    // console.log(barChartData)
     if (barChartData.hasErrors) {
       logout(sessionHash)
     } else {
