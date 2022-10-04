@@ -29,6 +29,11 @@
     "android": {
       "package": "com.chemy.scpp"
     },
-    "jsEngine": "hermes"
+    "jsEngine": "hermes",
+    "extra": {
+      "eas": {
+        "projectId": "a45ad516-9458-4750-8e82-b0bf836d3454"
+      }
+    }
   }
 }
