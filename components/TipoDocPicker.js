@@ -41,7 +41,7 @@ const TipoDocPicker = props => {
                     sessionHash
                 }
             }).catch((err) => { console.log(err) })
-            console.log(tipoDoc);
+            // console.log(tipoDoc);
             // Probablemente este Error es que el Token no es valido
             // Cerramos la Sesion
             if (tipoDoc.data.hasErrors) {

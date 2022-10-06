@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner, Text as PaperText } from 'react-native-paper';
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -199,7 +198,8 @@ export default function AddRecordScreen({ route }) {
             setProposito(doc.proposito)
             // Para evitar que se confunda con el offset de la fecha
             // similar a la solucion moment.utc()
-            setDate(new Date(doc.fecha.substring(0,10).split('-')))
+            var parsedDate = new Date(doc.fecha + 'T00:00:00.000' + (new Date().getTimezoneOffset() / 60) * 1000 * 60 * 60)
+            setDate(parsedDate)
             setCategory(doc.fk_categoria)
             setCategoriaName(doc.categoria.descripcion)
             setTipoDoc(doc.fk_tipoDoc)
