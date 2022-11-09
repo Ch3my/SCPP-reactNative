@@ -32,6 +32,32 @@ export default function ReportsScreen({ navigation }) {
   // Set moment locale
   moment.locale('es')
 
+  // No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
+  const oddRowsProcessewdStyle = theme => {
+    var backgroundColor = ''
+    // Controla el color dependiendo del tema en el que estamos
+    if (theme == 'default') {
+      backgroundColor = '#def5ff'
+    } else {
+      backgroundColor = '#222'
+    }
+    return {
+      backgroundColor
+    }
+  }
+  // Lo mismo que las filas Odd pero para el color del header
+  const headerBg = theme => {
+    var backgroundColor = ''
+    if (theme == 'default') {
+      backgroundColor = '#def5ff'
+    } else {
+      backgroundColor = '#2f2f2f'
+    }
+    return {
+      backgroundColor
+    }
+  }
+
   // .___________. __  .______     ______       _______    ______     ______ 
   // |           ||  | |   _  \   /  __  \     |       \  /  __  \   /      |
   // `---|  |----`|  | |  |_)  | |  |  |  |    |  .--.  ||  |  |  | |  ,----'
@@ -42,10 +68,10 @@ export default function ReportsScreen({ navigation }) {
   const [tipoDoc, setTipoDoc] = React.useState(null);
   const [tipoDocName, setTipoDocName] = React.useState('');
 
-  const onUpdateTipoDoc = ({ id, descripcion }) => {
+  const onUpdateTipoDoc = React.useCallback(({ id, descripcion }) => {
     setTipoDoc(id)
     setTipoDocName(descripcion)
-  }
+  }, [])
 
   // .______    __    ______  __  ___  _______ .______           ______      ___      .___________. _______   _______   ______   .______       __       ___      
   // |   _  \  |  |  /      ||  |/  / |   ____||   _  \         /      |    /   \     |           ||   ____| /  _____| /  __  \  |   _  \     |  |     /   \     
@@ -103,7 +129,10 @@ export default function ReportsScreen({ navigation }) {
     for (var doc of docs.data) {
       sumaTotal.current += doc.monto
     }
+    // var t0 = performance.now()
     setIsLoading(false)
+    // var t1 = performance.now()
+    // console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
     setListOfData(docs.data)
   }
 
@@ -113,11 +142,6 @@ export default function ReportsScreen({ navigation }) {
   //  |  |  |  |  /  /_\  \       |  |     |   __|  |   ___/  |  | |  |     |    <   |   __|  |      /     
   //  |  '--'  | /  _____  \      |  |     |  |____ |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.
   //  |_______/ /__/     \__\     |__|     |_______|| _|      |__|  \______||__|\__\ |_______|| _| `._____|
-
-  // Es necesario usar useStateWithCallBack para evitar que el DatePicker
-  // Se muestre 2 veces al hacer clic en el Boton
-  // Show es un flag de control para mostrar o no el DatePicker
-  // https://github.com/react-native-community/react-native-datetimepicker/issues/54
   const [dateFechaInicio, setDateFechaInicio] = React.useState();
   const [showDatePickerFechaInicioFlag, setShowDatePickerFechaInicioFlag] = React.useState(false);
 
@@ -151,7 +175,7 @@ export default function ReportsScreen({ navigation }) {
   // |______/   \______/      |__|      \______/  |__| \__| |_______||_______/    
 
   // Funcion que renderiza Los botones al Swiped
-  const renderRightAction = (text, color, x, progress, icon, id) => {
+  const renderRightAction = React.useCallback((text, color, x, progress, icon, id) => {
     // Calcula transformacion de los botones en funcion del movimiento
     const trans = progress.interpolate({
       inputRange: [0, 1],
@@ -175,7 +199,7 @@ export default function ReportsScreen({ navigation }) {
           console.log(e)
         }
       }
-    };
+    }
     return (
       <Animated.View style={{ flex: 1, transform: [{ translateX: trans }] }}>
         <RectButton
@@ -185,16 +209,17 @@ export default function ReportsScreen({ navigation }) {
           <Ionicons name={icon} size={20} style={{ marginBottom: -3 }} color={"white"} />
         </RectButton>
       </Animated.View>
-    );
-  };
+    )
+  }, [])
 
-  const renderRightActions = (progress, id) => (
+  const renderRightActions = React.useCallback((progress, id) => (
     // La variable progress es algo que Swipeable Component entrega
     <View style={{ width: 100, flexDirection: 'row' }}>
       {renderRightAction('modify', '#f8a501', 100, progress, 'md-create', id)}
       {renderRightAction('delete', '#a21d38', 50, progress, 'md-trash', id)}
     </View>
-  );
+  ), [])
+
   const collectRowRefs = (ref) => {
     // Obtenemos y guardamos todos los refs de los swipeables para poder ejecutar sus funciones internas
     // (como cerrarlos) a voluntad
@@ -215,14 +240,30 @@ export default function ReportsScreen({ navigation }) {
     // console.timeEnd("closeOtherSwipeables")
   }
 
-  function clearForm() {
-    // Seteamos todos los estados a null para no enviar a la API
-    // y obtener los resultados esperados
-    onUpdateTipoDoc({id: null, descripcion: null})
+  const clearForm = React.useCallback(() => {
+    onUpdateTipoDoc({ id: null, descripcion: null })
     setDateFechaTermino(null)
     setDateFechaInicio(null)
     setSearchPhrase('')
-    onUpdateCategoria({id: null, descripcion: null})
+    onUpdateCategoria({ id: null, descripcion: null })
+  }, [])
+
+  const renderRows = () => {
+    let rows = []
+    for (let [key, item] of listOfData.entries()) {
+      rows.push(
+        <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+          overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
+          <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
+            {/* moment.utc corrige el error que Moment parseara un dia menos */}
+            <DataTable.Cell style={{ flex: 0.5 }}>{moment.utc(item.fecha).format('D MMM')}</DataTable.Cell>
+            <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
+            <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
+          </DataTable.Row>
+        </Swipeable>
+      )
+    }
+    return rows
   }
 
   return (
@@ -265,74 +306,33 @@ export default function ReportsScreen({ navigation }) {
         {/* Botones */}
         <View style={{ flexDirection: 'row-reverse' }}>
           <Button mode="contained" style={styles.customInput} onPress={getDataAsync}>Procesar</Button>
-          <Button mode="outlined" style={[styles.customInput, {marginRight: 10}]} onPress={clearForm}>Limpiar</Button>
+          <Button mode="outlined" style={[styles.customInput, { marginRight: 10 }]} onPress={clearForm}>Limpiar</Button>
         </View>
 
-
-        {isLoading ? (
-          <ProgressBar progress={1} indeterminate />
-        ) : (
-          <View>
-            <DataTable>
-              <DataTable.Header style={[styles.tableHeader, headerBg()]}>
-                <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Fecha</Text>
-                </DataTable.Title>
-                <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Proposito</Text>
-                </DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Monto</Text>
-                </DataTable.Title>
-              </DataTable.Header>
-
-              {listOfData.map((item, key) => (
-                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
-                  overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                  <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
-                    <DataTable.Cell style={{ flex: 0.5 }}>{moment.utc(item.fecha).format('D MMM YY')}</DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
-                  </DataTable.Row>
-                </Swipeable>
-              ))}
-            </DataTable>
-            <View style={styles.totalDiv}>
-              <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
-            </View>
-          </View>
-        )}
-
+        <DataTable>
+          <DataTable.Header style={[styles.tableHeader, headerBg()]}>
+            <DataTable.Title style={{ flex: 0.5, paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Fecha</Text>
+            </DataTable.Title>
+            <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Proposito</Text>
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Monto</Text>
+            </DataTable.Title>
+          </DataTable.Header>
+          {renderRows()}
+        </DataTable>
+        <ProgressBar indeterminate visible={isLoading} />
+        <View style={styles.totalDiv}>
+          <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
+        </View>
       </View>
     </ScrollView>
   );
 }
 
-// No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
-const oddRowsProcessewdStyle = theme => {
-  var backgroundColor = ''
-  // Controla el color dependiendo del tema en el que estamos
-  if (theme == 'default') {
-    backgroundColor = '#def5ff'
-  } else {
-    backgroundColor = '#222'
-  }
-  return {
-    backgroundColor
-  }
-}
-// Lo mismo que las filas Odd pero para el color del header
-const headerBg = theme => {
-  var backgroundColor = ''
-  if (theme == 'default') {
-    backgroundColor = '#def5ff'
-  } else {
-    backgroundColor = '#2f2f2f'
-  }
-  return {
-    backgroundColor
-  }
-}
+
 
 const styles = StyleSheet.create({
   container: {

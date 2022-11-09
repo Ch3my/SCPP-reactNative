@@ -58,8 +58,6 @@ export default function DocsScreen({ navigation }) {
   //     \   \        |  |       /  /_\  \       |  |     |   __|  
   // .----)   |       |  |      /  _____  \      |  |     |  |____ 
   // |_______/        |__|     /__/     \__\     |__|     |_______|
-
-
   const [isLoading, setIsLoading] = React.useState(false);
   const [listOfData, setListOfData] = React.useState([]);
   const tipoDoc = React.useRef(1);
@@ -262,32 +260,28 @@ export default function DocsScreen({ navigation }) {
           <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
           <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
         </View>
-        <View visible={isLoading}>
-          <DataTable>
-            <DataTable.Header style={[styles.tableHeader, headerBg()]}>
-              <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
-                <Text style={styles.tableHeaderText}>Fecha</Text>
-              </DataTable.Title>
-              <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
-                <Text style={styles.tableHeaderText}>Proposito</Text>
-              </DataTable.Title>
-              <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
-                <Text style={styles.tableHeaderText}>Monto</Text>
-              </DataTable.Title>
-            </DataTable.Header>
-            {renderRows()}
-          </DataTable>
-          <ProgressBar indeterminate visible={isLoading} />
-          <View style={styles.totalDiv}>
-            <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
-          </View>
+        <DataTable>
+          <DataTable.Header style={[styles.tableHeader, headerBg()]}>
+            <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Fecha</Text>
+            </DataTable.Title>
+            <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Proposito</Text>
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+              <Text style={styles.tableHeaderText}>Monto</Text>
+            </DataTable.Title>
+          </DataTable.Header>
+          {renderRows()}
+        </DataTable>
+        <ProgressBar indeterminate visible={isLoading} />
+        <View style={styles.totalDiv}>
+          <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
         </View>
       </View>
     </ScrollView>
   )
 }
-
-
 
 const styles = StyleSheet.create({
   container: {

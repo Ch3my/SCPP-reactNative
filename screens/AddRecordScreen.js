@@ -109,16 +109,6 @@ export default function AddRecordScreen() {
     //  |  |  |  |  /  /_\  \       |  |     |   __|  |   ___/  |  | |  |     |    <   |   __|  |      /     
     //  |  '--'  | /  _____  \      |  |     |  |____ |  |      |  | |  `----.|  .  \  |  |____ |  |\  \----.
     //  |_______/ /__/     \__\     |__|     |_______|| _|      |__|  \______||__|\__\ |_______|| _| `._____|
-
-    // Es necesario usar useStateWithCallBack para evitar que el DatePicker
-    // Se muestre 2 veces al hacer clic en el Boton
-    // Show es un flag de control para mostrar o no el DatePicker
-    // https://github.com/react-native-community/react-native-datetimepicker/issues/54
-    // 17/05/2021 Al parecer ahora funciona bien asi que no es necesario
-    // const [date, setDate] = useStateWithCallback(
-    //     new Date(),
-    //     // () => setShow(Platform.OS === 'ios'),
-    // );
     const [date, setDate] = React.useState(new Date());
     const [show, setShow] = React.useState(false);
 
