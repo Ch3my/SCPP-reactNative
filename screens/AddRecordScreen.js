@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import * as WebBrowser from 'expo-web-browser';
 import { TextInput, Button, Banner, Text as PaperText } from 'react-native-paper';
 import axios from 'axios'
 // Imports para el DatePicker

@@ -25,6 +25,33 @@ export default function DocsScreen({ navigation }) {
   // Se trae el prefix para acceder a la API
   const { logout, apiPrefix, getTheme } = React.useContext(AuthContext)
 
+  // No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
+  const oddRowsProcessewdStyle = React.useCallback(theme => {
+    var backgroundColor = ''
+    // Controla el color dependiendo del tema en el que estamos
+    if (theme == 'default') {
+      backgroundColor = '#def5ff'
+    } else {
+      backgroundColor = '#222'
+    }
+    return {
+      backgroundColor
+    }
+  }, [])
+
+  // Lo mismo que las filas Odd pero para el color del header
+  const headerBg = React.useCallback(theme => {
+    var backgroundColor = ''
+    if (theme == 'default') {
+      backgroundColor = '#def5ff'
+    } else {
+      backgroundColor = '#2f2f2f'
+    }
+    return {
+      backgroundColor
+    }
+  }, [])
+
   //     _______..___________.     ___      .___________. _______ 
   //     /       ||           |    /   \     |           ||   ____|
   //    |   (----``---|  |----`   /  ^  \    `---|  |----`|  |__   
@@ -51,12 +78,13 @@ export default function DocsScreen({ navigation }) {
   //     |  |     |  | |   ___/  |  |  |  |    |  |  |  ||  |  |  | |  |     
   //     |  |     |  | |  |      |  `--'  |    |  '--'  ||  `--'  | |  `----.
   //     |__|     |__| | _|       \______/     |_______/  \______/   \______|
-
-  const onUpdateTipoDoc = ({ id, descripcion }) => {
+  // Memoriza la funcion para no re-renderizar el componente cada vez
+  const onUpdateTipoDoc = React.useCallback(({ id, descripcion }) => {
     tipoDoc.current = id
     setTipoDocName(descripcion)
     getDataAsync();
-  }
+  }, [])
+
 
   // .___________.     ___      .______    __       _______  _______       ___      .___________.     ___      
   // |           |    /   \     |   _  \  |  |     |   ____||       \     /   \     |           |    /   \     
@@ -67,6 +95,7 @@ export default function DocsScreen({ navigation }) {
 
   const getDataAsync = async () => {
     setIsLoading(true)
+    setListOfData([])
     // Reseteamos la variable que suma las filas mostradas en la tabla para volver a sumar
     sumaTotal.current = 0
 
@@ -83,6 +112,7 @@ export default function DocsScreen({ navigation }) {
     }
     // Obtiene la Session 
     var sessionHash = await AsyncStorage.getItem('session');
+
     let docs = await axios.get(apiPrefix + '/documentos', {
       params: {
         fk_tipoDoc: tipoDoc.current,
@@ -95,17 +125,21 @@ export default function DocsScreen({ navigation }) {
     // Cerramos la Sesion
     if (docs.data.hasErrors) {
       logout(sessionHash)
-    } else {
-      // Recorremos el array para sumar el Total
-      for (var doc of docs.data) {
-        sumaTotal.current += doc.monto
-      }
-      setIsLoading(false)
-      setListOfData(docs.data)
+      return
     }
+
+    // Recorremos el array para sumar el Total
+    for (var doc of docs.data) {
+      sumaTotal.current += doc.monto
+    }
+    setIsLoading(false)
+    // var t0 = performance.now()
+    setListOfData(docs.data)
+    // var t1 = performance.now()
+    // console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
   };
 
-  //  _______  _______ .___________.  ______  __    __          ___      .______    __      __       __       _______..___________. _______ .__   __.  _______ .______       _______      _______.
+  //   _______  _______ .___________.  ______  __    __          ___      .______    __      __       __       _______..___________. _______ .__   __.  _______ .______       _______      _______.
   //  |   ____||   ____||           | /      ||  |  |  |        /   \     |   _  \  |  |    |  |     |  |     /       ||           ||   ____||  \ |  | |   ____||   _  \     |   ____|    /       |
   //  |  |__   |  |__   `---|  |----`|  ,----'|  |__|  |       /  ^  \    |  |_)  | |  |    |  |     |  |    |   (----``---|  |----`|  |__   |   \|  | |  |__   |  |_)  |    |  |__      |   (----`
   //  |   __|  |   __|      |  |     |  |     |   __   |      /  /_\  \   |   ___/  |  |    |  |     |  |     \   \        |  |     |   __|  |  . `  | |   __|  |      /     |   __|      \   \    
@@ -131,7 +165,7 @@ export default function DocsScreen({ navigation }) {
   // |______/   \______/      |__|      \______/  |__| \__| |_______||_______/    
 
   // Funcion que renderiza Los botones al Swiped
-  const renderRightAction = (text, color, x, progress, icon, id) => {
+  const renderRightAction = React.useCallback((text, color, x, progress, icon, id) => {
     // Calcula transformacion de los botones en funcion del movimiento
     const trans = progress.interpolate({
       inputRange: [0, 1],
@@ -166,15 +200,16 @@ export default function DocsScreen({ navigation }) {
         </RectButton>
       </Animated.View>
     );
-  };
+  }, []);
 
-  const renderRightActions = (progress, id) => (
+  const renderRightActions = React.useCallback((progress, id) => (
     // La variable progress es algo que Swipeable Component entrega
     <View style={{ width: 100, flexDirection: 'row' }}>
       {renderRightAction('modify', '#f8a501', 100, progress, 'md-create', id)}
       {renderRightAction('delete', '#a21d38', 50, progress, 'md-trash', id)}
     </View>
-  );
+  ), [])
+
   const collectRowRefs = (ref) => {
     // Obtenemos y guardamos todos los refs de los swipeables para poder ejecutar sus funciones internas
     // (como cerrarlos) a voluntad
@@ -184,17 +219,34 @@ export default function DocsScreen({ navigation }) {
       rowRefs.push(ref)
     }
   }
+
   const closeOtherSwipeables = identifier => {
     // Cuando abren un Row cerramos todos los demas
-    // console.time("closeOtherSwipeables")
     rowRefs.forEach((ref) => {
       if (identifier != ref.props.identifier) {
         ref.close();
       }
     });
-    // console.timeEnd("closeOtherSwipeables")
   }
 
+
+  const renderRows = () => {
+    let rows = []
+    for (let [key, item] of listOfData.entries()) {
+      rows.push(
+        <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
+          overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
+          <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
+            {/* moment.utc corrige el error que Moment parseara un dia menos */}
+            <DataTable.Cell style={{ flex: 0.5 }}>{moment.utc(item.fecha).format('D MMM')}</DataTable.Cell>
+            <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
+            <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
+          </DataTable.Row>
+        </Swipeable>
+      )
+    }
+    return rows
+  }
 
   // .______       _______ .__   __.  _______   _______ .______      
   // |   _  \     |   ____||  \ |  | |       \ |   ____||   _  \     
@@ -203,11 +255,6 @@ export default function DocsScreen({ navigation }) {
   // |  |\  \----.|  |____ |  |\   | |  '--'  ||  |____ |  |\  \----.
   // | _| `._____||_______||__| \__| |_______/ |_______|| _| `._____|                                                                
 
-  // Notas en la renderizacion del Contenido
-  // se uso la propiedad flex para controlar el ancho de las columnas y las celdas segun leido en Post
-  // No parece ser la mejor forma pero es funcional
-
-  // TODO. Ver si la paginacion es necesaria
   return (
     <ScrollView style={styles.container}>
       <View style={styles.contentContainer}>
@@ -215,77 +262,32 @@ export default function DocsScreen({ navigation }) {
           <TipoDocPicker onUpdateTipoDoc={onUpdateTipoDoc} />
           <PaperText style={{ marginLeft: 10, fontSize: 16 }}>{tipoDocName}</PaperText>
         </View>
-        {isLoading ? (
-          <ProgressBar indeterminate />
-        ) : (
-          <View>
-            <DataTable>
-              <DataTable.Header style={[styles.tableHeader, headerBg()]}>
-                <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Fecha</Text>
-                </DataTable.Title>
-                <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Proposito</Text>
-                </DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
-                  <Text style={styles.tableHeaderText}>Monto</Text>
-                </DataTable.Title>
-              </DataTable.Header>
-
-              {listOfData.map((item, key) => (
-                <Swipeable renderRightActions={progress => renderRightActions(progress, item.id)} key={item.id} identifier={item.id} friction={1} ref={collectRowRefs}
-                  overshootFriction={4} onSwipeableRightOpen={() => closeOtherSwipeables(item.id)}>
-                  <DataTable.Row style={key % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
-                    {/* moment.utc corrige el error que Moment parseara un dia menos */}
-                    <DataTable.Cell style={{ flex: 0.5 }}>{moment.utc(item.fecha).format('D MMM')}</DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 1.2 }}>{item.proposito}</DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 0.5 }}> {numeral(item.monto).format('0,0')}</DataTable.Cell>
-                  </DataTable.Row>
-                </Swipeable>
-              ))}
-              {/* <DataTable.Pagination
-            page={1}
-            numberOfPages={3}
-            onPageChange={(page) => { console.log(page); }}
-            label="1-2 of 6"
-          /> */}
-            </DataTable>
-            <View style={styles.totalDiv}>
-              <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
-            </View>
+        <View visible={isLoading}>
+          <DataTable>
+            <DataTable.Header style={[styles.tableHeader, headerBg()]}>
+              <DataTable.Title style={{ flex: 0.4, paddingTop: 8 }}>
+                <Text style={styles.tableHeaderText}>Fecha</Text>
+              </DataTable.Title>
+              <DataTable.Title style={{ flex: 1.2, paddingTop: 8 }}>
+                <Text style={styles.tableHeaderText}>Proposito</Text>
+              </DataTable.Title>
+              <DataTable.Title numeric style={{ flex: 0.5, paddingTop: 8 }}>
+                <Text style={styles.tableHeaderText}>Monto</Text>
+              </DataTable.Title>
+            </DataTable.Header>
+            {renderRows()}
+          </DataTable>
+          <ProgressBar indeterminate visible={isLoading} />
+          <View style={styles.totalDiv}>
+            <PaperText>Total $ {numeral(sumaTotal.current).format('0,0')}</PaperText>
           </View>
-        )}
-
+        </View>
       </View>
     </ScrollView>
-  );
+  )
 }
 
-// No se porque no funciona getTheme dentro de la funcion asi que lo pasamos como argumento
-const oddRowsProcessewdStyle = theme => {
-  var backgroundColor = ''
-  // Controla el color dependiendo del tema en el que estamos
-  if (theme == 'default') {
-    backgroundColor = '#def5ff'
-  } else {
-    backgroundColor = '#222'
-  }
-  return {
-    backgroundColor
-  }
-}
-// Lo mismo que las filas Odd pero para el color del header
-const headerBg = theme => {
-  var backgroundColor = ''
-  if (theme == 'default') {
-    backgroundColor = '#def5ff'
-  } else {
-    backgroundColor = '#2f2f2f'
-  }
-  return {
-    backgroundColor
-  }
-}
+
 
 const styles = StyleSheet.create({
   container: {
@@ -314,6 +316,6 @@ const styles = StyleSheet.create({
   totalDiv: {
     alignItems: 'flex-end',
     padding: 15,
-    marginTop: 20
+    marginTop: 10
   }
 });

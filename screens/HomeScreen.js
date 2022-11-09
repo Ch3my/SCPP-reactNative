@@ -20,7 +20,6 @@ export default function HomeScreen({ navigation }) {
   const [monthlyGraphData, setMonthlyGraphData] = React.useState(null);
   const [barChartData, setBarChartData] = React.useState(null);
 
-
   // Se trae el prefix para acceder a la API
   const { logout, apiPrefix, getTheme } = React.useContext(AuthContext)
 
@@ -58,24 +57,7 @@ export default function HomeScreen({ navigation }) {
   };
 
   const BuildMonthlyChart = () => {
-    if (monthlyGraphData) {
-      return (
-        <LineChart datasets={[{
-          data: monthlyGraphData.gastosDataset,
-          color: 'rgba(255, 99, 132, 1)'
-        }, {
-          data: monthlyGraphData.ingresosDataset,
-          color: 'rgba(4, 162, 235, 1)'
-        }, {
-          data: monthlyGraphData.ahorrosDataset,
-          color: 'rgba(255, 205, 86, 1)'
-        }]}
-          totalWidth={Dimensions.get('window').width}
-          totalHeight="250"
-          labels={monthlyGraphData.labels}
-          yAxisPrefix='$ ' />
-      )
-    } else {
+    if (!monthlyGraphData) {
       return (
         <ActivityIndicator
           color="#007bff"
@@ -83,17 +65,26 @@ export default function HomeScreen({ navigation }) {
         />
       );
     }
+    return (
+      <LineChart datasets={[{
+        data: monthlyGraphData.gastosDataset,
+        color: 'rgba(255, 99, 132, 1)'
+      }, {
+        data: monthlyGraphData.ingresosDataset,
+        color: 'rgba(4, 162, 235, 1)'
+      }, {
+        data: monthlyGraphData.ahorrosDataset,
+        color: 'rgba(255, 205, 86, 1)'
+      }]}
+        totalWidth={Dimensions.get('window').width}
+        totalHeight="250"
+        labels={monthlyGraphData.labels}
+        yAxisPrefix='$ ' />
+    )
   }
 
   const BuildExpensesByCategoryChart = () => {
-    if (barChartData) {
-      return (
-        <BarChart dataset={barChartData.amounts}
-          totalWidth={Dimensions.get('window').width}
-          labels={barChartData.labels} 
-          yAxisPrefix='$ '/>
-      )
-    } else {
+    if (!barChartData) {
       return (
         <ActivityIndicator
           color="#007bff"
@@ -101,9 +92,18 @@ export default function HomeScreen({ navigation }) {
         />
       );
     }
+    return (
+      <BarChart dataset={barChartData.amounts}
+        totalWidth={Dimensions.get('window').width}
+        labels={barChartData.labels}
+        yAxisPrefix='$ ' />
+    )
   }
 
   const BuildMonthlyTable = () => {
+    if (!monthlyGraphData) {
+      return null
+    }
     // Lo mismo que las filas Odd pero para el color del header
     const headerBg = theme => {
       var backgroundColor = ''
@@ -130,41 +130,37 @@ export default function HomeScreen({ navigation }) {
       }
     }
 
-    if (monthlyGraphData) {
-      let rows = []
-      for (let i = monthlyGraphData.labels.length - 1; i > -1; i--) {
-        rows.push(
-          <DataTable.Row key={i} style={i % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
-            <DataTable.Cell>{monthlyGraphData.labels[i]}</DataTable.Cell>
-            <DataTable.Cell numeric>{numeral(monthlyGraphData.ingresosDataset[i]).format('0,0')}</DataTable.Cell>
-            <DataTable.Cell numeric>{numeral(monthlyGraphData.gastosDataset[i]).format('0,0')}</DataTable.Cell>
-            <DataTable.Cell numeric > {numeral(monthlyGraphData.ahorrosDataset[i]).format('0,0')}</DataTable.Cell>
-          </DataTable.Row>
-        )
-      }
-
-      return (
-        <DataTable style={{ paddingTop: 10, paddingLeft: 10, paddingRight: 10 }}>
-          <DataTable.Header style={[styles.tableHeader, headerBg()]}>
-            <DataTable.Title style={{ paddingTop: 8 }}>
-              <Text style={styles.tableHeaderText}>Fecha</Text>
-            </DataTable.Title>
-            <DataTable.Title numeric style={{ paddingTop: 8 }}>
-              <Text style={styles.tableHeaderText}>Ingresos</Text>
-            </DataTable.Title>
-            <DataTable.Title numeric style={{ paddingTop: 8 }}>
-              <Text style={styles.tableHeaderText}>Gastos</Text>
-            </DataTable.Title>
-            <DataTable.Title numeric style={{ paddingTop: 8 }}>
-              <Text style={styles.tableHeaderText}>Ahorros</Text>
-            </DataTable.Title>
-          </DataTable.Header>
-          {rows}
-        </DataTable>
+    let rows = []
+    for (let i = monthlyGraphData.labels.length - 1; i > -1; i--) {
+      rows.push(
+        <DataTable.Row key={i} style={i % 2 == 0 && oddRowsProcessewdStyle(getTheme())}>
+          <DataTable.Cell>{monthlyGraphData.labels[i]}</DataTable.Cell>
+          <DataTable.Cell numeric>{numeral(monthlyGraphData.ingresosDataset[i]).format('0,0')}</DataTable.Cell>
+          <DataTable.Cell numeric>{numeral(monthlyGraphData.gastosDataset[i]).format('0,0')}</DataTable.Cell>
+          <DataTable.Cell numeric > {numeral(monthlyGraphData.ahorrosDataset[i]).format('0,0')}</DataTable.Cell>
+        </DataTable.Row>
       )
-    } else {
-      return null
     }
+
+    return (
+      <DataTable style={{ paddingTop: 10, paddingLeft: 10, paddingRight: 10 }}>
+        <DataTable.Header style={[styles.tableHeader, headerBg()]}>
+          <DataTable.Title style={{ paddingTop: 8 }}>
+            <Text style={styles.tableHeaderText}>Fecha</Text>
+          </DataTable.Title>
+          <DataTable.Title numeric style={{ paddingTop: 8 }}>
+            <Text style={styles.tableHeaderText}>Ingresos</Text>
+          </DataTable.Title>
+          <DataTable.Title numeric style={{ paddingTop: 8 }}>
+            <Text style={styles.tableHeaderText}>Gastos</Text>
+          </DataTable.Title>
+          <DataTable.Title numeric style={{ paddingTop: 8 }}>
+            <Text style={styles.tableHeaderText}>Ahorros</Text>
+          </DataTable.Title>
+        </DataTable.Header>
+        {rows}
+      </DataTable>
+    )
   }
 
   // Cada vez que le hacen Focus a esta pagina traemos los datos del Servidor

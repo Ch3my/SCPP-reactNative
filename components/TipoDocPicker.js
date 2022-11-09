@@ -82,4 +82,4 @@ const TipoDocPicker = props => {
     )
 }
 
-export default TipoDocPicker;
+export default React.memo(TipoDocPicker);
