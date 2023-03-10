@@ -117,7 +117,7 @@ export default function BottomTabNavigator({ navigation, route }) {
         }}
       /> */}
       <BottomTab.Screen
-        name="Config"
+        name="ConfigNavigator"
         component={ConfigNavigator}
         options={{
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-cog" />,
