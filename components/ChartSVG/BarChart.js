@@ -40,10 +40,10 @@ const buildLinesXY = (chartWidth, chartHeight) => {
     // pero quiza sea un error en las matematicas de xSeparation de los Paths
     // por ahora le sumamos una cola para que quede bien
     return (
-        <View>
+        <Svg>
             <Line x1={SVGPADDINGLEFT} x2={chartWidth + 25} y={chartHeight + SVGPADDINGTOP} strokeWidth="1" stroke="#808080" />
             <Line y1={chartHeight + SVGPADDINGTOP} y2={0 + SVGPADDINGTOP} x={SVGPADDINGLEFT} strokeWidth="1" stroke="#808080" />
-        </View>
+        </Svg>
     )
 }
 
