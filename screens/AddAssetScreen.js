@@ -7,15 +7,9 @@ import AuthContext from '../context/AuthContext'
 import { List } from 'react-native-paper'
 
 export default function ConfigScreen({ navigation }) {
-
-    const { updateTheme, getTheme } = React.useContext(AuthContext)
-
     return (
         <ScrollView style={styles.container}>
-            <List.Item title={"Assets"}   onPress={()=> navigation.navigate("Assets")} />
-            <List.Item title={'Tema Activo: ' + getTheme()}   onPress={()=> updateTheme()} />
-            <List.Item title="Cerrar Sesión" left={props => <List.Icon {...props} icon="logout" />}
-                onPress={() => navigation.navigate('Logout')} />
+            <Text>ADD ASSET</Text>
         </ScrollView>
     );
 }

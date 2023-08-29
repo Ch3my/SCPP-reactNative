@@ -2,12 +2,12 @@ import * as React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
-import LogoutScreen from '../screens/entrance/LogoutScreen';
-import ConfigScreen from '../screens/ConfigScreen';
-import AssetsNavigator from './AssetsNavigator';
+import AssetsScreen from '../screens/AssetsScreen';
+import EditAssetScreen from '../screens/EditAssetScreen';
+import AddAssetScreen from '../screens/AddAssetScreen';
 
 const Stack = createStackNavigator();
-const INITIAL_ROUTE_NAME = 'Config';
+const INITIAL_ROUTE_NAME = 'Assets';
 
 export default function ConfigNavigator({ navigation, route }) {
     // Set the header title on the parent stack navigator depending on the
@@ -19,9 +19,9 @@ export default function ConfigNavigator({ navigation, route }) {
 
     return (
         <Stack.Navigator>
-            <Stack.Screen name="Config" component={ConfigScreen} />
-            <Stack.Screen name="Logout" component={LogoutScreen} />
-            <Stack.Screen name="Assets" component={AssetsNavigator} options={{headerShown:false}}/>
+            <Stack.Screen name="ListAssets" component={AssetsScreen} options={{title: "Assets"}} />
+            <Stack.Screen name="EditAssetScreen" component={EditAssetScreen} />
+            <Stack.Screen name="AddAssetScreen" component={AddAssetScreen} options={{title: "Agregar Asset"}} />
         </Stack.Navigator>
     );
 }
@@ -34,9 +34,11 @@ function getHeaderTitle(route) {
     const routeName = getFocusedRouteNameFromRoute(route) ?? INITIAL_ROUTE_NAME;
 
     switch (routeName) {
-        case 'Logout':
-            return 'Logout';
-        case 'Assets':
+        case 'ListAssets':
             return 'Assets';
+        case 'EditAssetScreen':
+            return 'EditAssetScreen';
+        case 'AddAssetScreen':
+            return 'Agregar Asset';
     }
 }
